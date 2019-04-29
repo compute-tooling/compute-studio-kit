@@ -1,0 +1,10 @@
+name: paramtools-dev
+channels:
+  - conda-forge
+dependencies:
+  - paramtools
+  - pytest
+  - pip:
+    - pre-commit
+    - black
+    - flake8
