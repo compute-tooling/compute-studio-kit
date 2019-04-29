@@ -7,7 +7,7 @@ import itertools
 import random
 import json
 
-from marshmallow import fields, Schema
+from marshmallow import fields, Schema, validate
 import paramtools
 import numpy as np
 
@@ -27,8 +27,8 @@ class Parameters(paramtools.Parameters):
             validator_name,
             spec[param]["validators"][validator_name],
             param,
-            "", 
-            {"value": param_spec["value"][0]["value"]}, 
+            "",
+            {"value": param_spec["value"][0]["value"]},
             self.specification(use_state=False)
         )
 
@@ -48,6 +48,24 @@ class ErrorsWarnings(Schema):
     errors = fields.Dict(keys=fields.Str(), values=fields.List(fields.Str()))
     warnings = fields.Dict(keys=fields.Str(), values=fields.List(fields.Str()))
 
+
+class Output(Schema):
+    title = fields.Str()
+    media_type = fields.Str(
+        validate=validate.OneOf(choices=["bokeh", "table", "CSV", "PNG",
+                                         "JPEG", "MP3", "MP4", "HDF5"])
+    )
+    # Data could be a string or dict. It depends on the media type.
+    data = fields.Field()
+
+
+class Result(Schema):
+    """Serializer for load_to_S3like"""
+
+    renderable = fields.Nested(Output, many=True)
+    downloadable = fields.Nested(Output, many=True)
+
+
 def serialize(data):
     def ser(obj):
         if isinstance(obj, (datetime, date)):
@@ -60,23 +78,25 @@ def serialize(data):
 class TestAPI:
 
     def __init__(self, model_parameters: Callable, validate_inputs: Callable,
-                 run_model: Callable, schema: JSONLike =None):
+                 run_model: Callable, ok_adjustment: dict, bad_adjustment: dict):
         self.model_parameters = model_parameters
         self.validate_inputs = validate_inputs
         self.run_model = run_model
-        self.schema = schema
-    
+        self.ok_adjustment = ok_adjustment
+        self.bad_adjustment = bad_adjustment
+
     def test(self):
         self.test_model_parameters()
         self.test_validate_inputs()
-    
+        self.test_run_model()
+
     def test_model_parameters(self):
         init_metaparams, init_modparams = self.model_parameters({})
 
         class MetaParams(Parameters):
             array_first = True
             defaults = init_metaparams
-        
+
         metaparams = MetaParams()
         assert metaparams
 
@@ -89,7 +109,7 @@ class TestAPI:
         mp_grid = []
         for mp_name in mp_names:
             mp_grid.append(metaparams.param_grid(mp_name))
-        
+
         mp_grid = itertools.product(*mp_grid)
 
         for tup in mp_grid:
@@ -102,54 +122,41 @@ class TestAPI:
     def test_validate_inputs(self):
         init_metaparams, init_modparams = self.model_parameters({})
 
-        schema = {
-            "schema": {
-                "additional_members": {
-                    "section_1": {"type": "str"},
-                    "section_2": {"type": "str"}
-                }
-            }
-        }
-        
-        modparams_dict = {}
-        for major_sect, params in init_modparams.items():
-            defaults_ = serialize({
-                k: dict(v, **{"value": v["value"][0]["value"]})
-                for k, v in params.items()
-            })
-            defaults_.update(schema)
-            class ModParams(Parameters):
-                defaults = defaults_
-            modparams_dict[major_sect] = ModParams()
-       
+        class MetaParams(Parameters):
+            array_first = True
+            defaults = init_metaparams
+
+        mp_spec = MetaParams().specification()
+
         ew_template = {
             major_sect: {"errors": {}, "warnings": {}}
             for major_sect in init_modparams
         }
         ew_schema = ErrorsWarnings()
-        adj = defaultdict(dict)
-        for major_sect, modparams in modparams_dict.items():
-            print('doing major sect', major_sect)
-            for param in modparams.specification():
-                print('doing param', param)
-                try:
-                    rand = random.choice(modparams.param_grid(param))
-                except ValueError:
-                    continue
-                nd = modparams._data[param]["number_dims"]
-                while nd > 0:
-                    rand = [rand]
-                    nd -= 1
-                mini_adj = serialize({param: rand})
-                modparams.adjust(mini_adj)
-                adj[major_sect].update(mini_adj)
-                ew = self.validate_inputs(
-                    init_metaparams, 
-                    {major_sect: mini_adj}, 
-                    copy.deepcopy(ew_template)
-                )
-                assert ew_schema.loads(json.dumps(ew[major_sect]))
 
-        ew = self.validate_inputs(init_metaparams, adj, copy.deepcopy(ew_template))
-        for major_sect in ew:
-            assert ew_schema.loads(json.dumps(serialize(ew[major_sect])))
+        ew_result = self.validate_inputs(mp_spec, self.ok_adjustment, copy.deepcopy(ew_template))
+
+        for major_sect, ew_dict in ew_result.items():
+            assert ew_schema.load(ew_dict)
+            assert len(ew_dict.get("errors")) == 0
+            assert len(ew_dict.get("warnings")) == 0
+
+        ew_result = self.validate_inputs(mp_spec, self.bad_adjustment, copy.deepcopy(ew_template))
+
+        for major_sect, ew_dict in ew_result.items():
+            assert ew_schema.load(ew_dict)
+            assert len(ew_dict.get("errors")) > 0
+
+
+    def test_run_model(self):
+        init_metaparams, init_modparams = self.model_parameters({})
+
+        class MetaParams(Parameters):
+            array_first = True
+            defaults = init_metaparams
+
+        mp_spec = MetaParams().specification()
+
+        result = self.run_model(mp_spec, self.ok_adjustment)
+
+        assert Result().load(result)
