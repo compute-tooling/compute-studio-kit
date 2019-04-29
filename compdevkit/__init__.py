@@ -75,7 +75,7 @@ def serialize(data):
         return obj
     return json.loads(json.dumps(data, default=ser))
 
-class TestEndpoints:
+class TestFunctions:
 
     def __init__(self, model_parameters: Callable, validate_inputs: Callable,
                  run_model: Callable, ok_adjustment: dict, bad_adjustment: dict):

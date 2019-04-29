@@ -1,16 +1,16 @@
 # Comp-Developer-Toolkit
 
-`compdevkit` tests your model's endpoints against the COMP criteria. If your endpoints pass the `compdevkit` tests, then you can be reasonably sure that the endpoints will work on COMPmodels.org.
+`compdevkit` tests your model's functions against the COMP criteria. If your functions pass the `compdevkit` tests, then you can be reasonably sure that the functions will work on COMPmodels.org.
 
 ## Example
 
 ```python
-from compdevkit import TestEndpoints
+from compdevkit import TestFunctions
 
 import matchups
 
 def test_get_parameters():
-    ta = TestEndpoints(
+    ta = TestFunctions(
         model_parameters=matchups.get_inputs,
         validate_inputs=matchups.validate_inputs,
         run_model=matchups.get_matchup,
