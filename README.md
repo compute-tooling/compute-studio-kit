@@ -5,12 +5,12 @@
 ## Example
 
 ```python
-from compdevkit import TestFunctions
+from compdevkit import FunctionsTest
 
 import matchups
 
 def test_get_parameters():
-    ta = TestFunctions(
+    ta = FunctionsTest(
         model_parameters=matchups.get_inputs,
         validate_inputs=matchups.validate_inputs,
         run_model=matchups.get_matchup,
