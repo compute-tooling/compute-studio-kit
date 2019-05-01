@@ -40,8 +40,10 @@ class Parameters(paramtools.Parameters):
 
 class Param(paramtools.BaseParamSchema):
     value = fields.List(fields.Dict)
-    section_1 = fields.Str()
-    section_2 = fields.Str()
+    checkbox = fields.Bool(required=False)
+    section_1 = fields.Str(required=False)
+    section_2 = fields.Str(required=False)
+
 
 class Params(Schema):
     parameters = fields.Dict(keys=fields.Str(), values=fields.Nested(Param), many=True)
