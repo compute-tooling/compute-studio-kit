@@ -24,5 +24,5 @@ def test_get_parameters():
 ## Installation
 
 ```bash
-pip install git+https://github.com/comp-org/Developer-Tools.git@master
+pip install compdevkit
 ```
