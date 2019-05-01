@@ -18,6 +18,9 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     install_requires=["paramtools>=0.5.1"],
     include_package_data=True,
+    entry_points = {
+        'console_scripts': ['cdk-init=compdevkit.cli:init'],
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

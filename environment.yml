@@ -1,9 +1,10 @@
-name: paramtools-dev
+name: compdevkit-dev
 channels:
   - conda-forge
 dependencies:
   - paramtools
   - pytest
+  - pip
   - pip:
     - pre-commit
     - black

@@ -2,8 +2,18 @@
 
 `compdevkit` tests your model's functions against the COMP criteria. If your functions pass the `compdevkit` tests, then you can be reasonably sure that the functions will work on COMPmodels.org.
 
-## Example
+## Install `compdevkit`
 
+```bash
+pip install compdevkit
+```
+
+## Set up the `comp` directory
+```bash
+cdk-init
+```
+
+## Test your functions
 ```python
 from compdevkit import FunctionsTest
 
@@ -19,10 +29,4 @@ def test_get_parameters():
     )
     ta.test()
 
-```
-
-## Installation
-
-```bash
-pip install git+https://github.com/comp-org/Developer-Tools.git@master
 ```
