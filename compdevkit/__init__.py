@@ -141,7 +141,7 @@ class FunctionsTest:
 
         ew_result = self.validate_inputs(mp_spec, self.ok_adjustment, copy.deepcopy(ew_template))
 
-        for major_sect, ew_dict in ew_result.items():
+        for _, ew_dict in ew_result.items():
             assert ew_schema.load(ew_dict)
             assert len(ew_dict.get("errors")) == 0
             assert len(ew_dict.get("warnings")) == 0
