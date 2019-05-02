@@ -31,6 +31,8 @@ setuptools.setup(
 )
 """
 
+installtemplate = "# bash commands for installing your package"
+
 
 def write_template(path, template):
     with open(path, "w") as f:
@@ -38,12 +40,14 @@ def write_template(path, template):
 
 def init():
     comptoplevel = Path.cwd() / "compconfig"
-    comptoplevel.mkdir()
+    comptoplevel.mkdir(exist_ok=True)
     (comptoplevel / "setup.py").touch()
     write_template(comptoplevel / "setup.py", setuptemplate)
+    (comptoplevel / "install.sh").touch()
+    write_template(comptoplevel / "install.sh", installtemplate)
 
     comp = comptoplevel / "compconfig"
-    comp.mkdir()
+    comp.mkdir(exist_ok=True)
 
     (comp / "__init__.py").touch()
 
@@ -51,7 +55,7 @@ def init():
     write_template(comp / "functions.py", functionstemplate)
 
     test = comp / "tests"
-    test.mkdir()
+    test.mkdir(exist_ok=True)
 
     (test / "__init__.py").touch()
 
