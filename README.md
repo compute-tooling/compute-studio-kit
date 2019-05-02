@@ -9,11 +9,13 @@ pip install compdevkit
 ```
 
 ## Set up the `comp` directory
+
 ```bash
 cdk-init
 ```
 
 ## Test your functions
+
 ```python
 from compdevkit import FunctionsTest
 
@@ -29,4 +31,10 @@ def test_get_parameters():
     )
     ta.test()
 
+```
+
+## Run the tests
+
+```bash
+py.test compconfig -v
 ```
