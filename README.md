@@ -23,7 +23,7 @@ import matchups
 
 def test_get_parameters():
     ta = FunctionsTest(
-        model_parameters=matchups.get_inputs,
+        get_inputs=matchups.get_inputs,
         validate_inputs=matchups.validate_inputs,
         run_model=matchups.get_matchup,
         ok_adjustment={"matchup": {"pitcher": [{"value": "Max Scherzer"}]}},
