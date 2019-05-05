@@ -65,7 +65,7 @@ def run_model(meta_param_dict, adjustment):
 
 def test_FunctionsTest():
     ft = FunctionsTest(
-        model_parameters=get_inputs,
+        get_inputs=get_inputs,
         validate_inputs=validate_inputs,
         run_model=run_model,
         ok_adjustment={"mock": {"model_param": 2}},
@@ -76,7 +76,7 @@ def test_FunctionsTest():
 def test_serialization_error():
     with pytest.raises(SerializationError):
         ft = FunctionsTest(
-            model_parameters=get_inputs_ser_error,
+            get_inputs=get_inputs_ser_error,
             validate_inputs=validate_inputs,
             run_model=run_model,
             ok_adjustment={"mock": {"model_param": 2}},

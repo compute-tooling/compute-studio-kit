@@ -75,21 +75,21 @@ class Result(Schema):
 
 class FunctionsTest:
 
-    def __init__(self, model_parameters: Callable, validate_inputs: Callable,
+    def __init__(self, get_inputs: Callable, validate_inputs: Callable,
                  run_model: Callable, ok_adjustment: dict, bad_adjustment: dict):
-        self.model_parameters = model_parameters
+        self.get_inputs = get_inputs
         self.validate_inputs = validate_inputs
         self.run_model = run_model
         self.ok_adjustment = ok_adjustment
         self.bad_adjustment = bad_adjustment
 
     def test(self):
-        self.test_model_parameters()
+        self.test_get_inputs()
         self.test_validate_inputs()
         self.test_run_model()
 
-    def test_model_parameters(self):
-        init_metaparams, init_modparams = self.model_parameters({})
+    def test_get_inputs(self):
+        init_metaparams, init_modparams = self.get_inputs({})
 
         try:
             json.dumps(init_metaparams)
@@ -126,14 +126,14 @@ class FunctionsTest:
         mp_grid = itertools.product(*mp_grid)
 
         for tup in mp_grid:
-            _, modparams_ = self.model_parameters(
+            _, modparams_ = self.get_inputs(
                 {mp_names[i]: tup[i] for i in range(len(mp_names))}
             )
             for modparams in modparams_.values():
                 assert params.load({"parameters": modparams})
 
     def test_validate_inputs(self):
-        init_metaparams, init_modparams = self.model_parameters({})
+        init_metaparams, init_modparams = self.get_inputs({})
 
         class MetaParams(Parameters):
             array_first = True
@@ -162,7 +162,7 @@ class FunctionsTest:
 
 
     def test_run_model(self):
-        init_metaparams, init_modparams = self.model_parameters({})
+        init_metaparams, init_modparams = self.get_inputs({})
 
         class MetaParams(Parameters):
             array_first = True
