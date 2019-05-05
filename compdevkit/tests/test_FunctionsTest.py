@@ -1,6 +1,8 @@
-from compdevkit import FunctionsTest
-
+import pytest
 import paramtools
+
+from compdevkit import FunctionsTest, SerializationError
+
 
 class MetaParams(paramtools.Parameters):
     array_first = True
@@ -39,7 +41,17 @@ class ModelParameters(paramtools.Parameters):
     }
 
 def get_inputs(meta_param_dict):
-    return MetaParams().specification(meta_data=True), {"mock": ModelParameters().specification(meta_data=True)}
+    return (
+        MetaParams().specification(meta_data=True, serializable=True),
+        {"mock": ModelParameters().specification(meta_data=True, serializable=True)}
+    )
+
+def get_inputs_ser_error(meta_param_dict):
+    return (
+        MetaParams().specification(meta_data=True, serializable=False),
+        {"mock": ModelParameters().specification(meta_data=True, serializable=False)}
+    )
+
 
 def validate_inputs(meta_param_dict, adjustment, errors_warnings):
     mp = ModelParameters()
@@ -60,3 +72,14 @@ def test_FunctionsTest():
         bad_adjustment={"mock": {"model_param": "not an int"}}
     )
     ft.test()
+
+def test_serialization_error():
+    with pytest.raises(SerializationError):
+        ft = FunctionsTest(
+            model_parameters=get_inputs_ser_error,
+            validate_inputs=validate_inputs,
+            run_model=run_model,
+            ok_adjustment={"mock": {"model_param": 2}},
+            bad_adjustment={"mock": {"model_param": "not an int"}}
+        )
+        ft.test()

@@ -11,6 +11,8 @@ from marshmallow import fields, Schema, validate
 import paramtools
 import numpy as np
 
+from .exceptions import SerializationError
+
 
 __version__ = "1.2.0"
 
@@ -71,15 +73,6 @@ class Result(Schema):
     downloadable = fields.Nested(Output, many=True)
 
 
-def serialize(data):
-    def ser(obj):
-        if isinstance(obj, (datetime, date)):
-            return str(obj)
-        if isinstance(obj, np.ndarray):
-            return obj.tolist()
-        return obj
-    return json.loads(json.dumps(data, default=ser))
-
 class FunctionsTest:
 
     def __init__(self, model_parameters: Callable, validate_inputs: Callable,
@@ -97,6 +90,21 @@ class FunctionsTest:
 
     def test_model_parameters(self):
         init_metaparams, init_modparams = self.model_parameters({})
+
+        try:
+            json.dumps(init_metaparams)
+        except TypeError as e:
+            raise SerializationError(
+                (f"Meta parameters must be JSON serializable: \n\n\t{str(e)}\n"
+                 f"\nHint: try setting `serializable=True` in `Parameters.specification`.")
+            )
+        try:
+            json.dumps(init_modparams)
+        except TypeError as e:
+            raise SerializationError(
+                (f"Model parameters must be JSON serializable: \n\n\t{str(e)}\n"
+                 f"\nHint: try setting `serializable=True` in `Parameters.specification`.")
+            )
 
         class MetaParams(Parameters):
             array_first = True
