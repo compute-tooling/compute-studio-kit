@@ -14,7 +14,7 @@ import numpy as np
 from .exceptions import SerializationError
 
 
-__version__ = "1.3.0"
+__version__ = "1.3.1"
 
 Num = Union[int, float]
 JSONLike = Union[dict, str]

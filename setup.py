@@ -16,7 +16,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/comp-org/COMP-Developer-Toolkit",
     packages=setuptools.find_packages(),
-    install_requires=["paramtools>=0.5.1"],
+    install_requires=["paramtools>=0.5.3"],
     include_package_data=True,
     entry_points = {
         'console_scripts': ['cdk-init=compdevkit.cli:init'],
