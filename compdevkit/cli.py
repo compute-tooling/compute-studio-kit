@@ -39,6 +39,7 @@ def write_template(path, template):
         with open(path, "w") as f:
             f.write(template)
 
+
 def init():
     comptoplevel = Path.cwd() / "compconfig"
     comptoplevel.mkdir(exist_ok=True)
