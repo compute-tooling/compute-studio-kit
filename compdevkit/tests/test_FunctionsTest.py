@@ -66,6 +66,7 @@ def validate_inputs_returns_tuple(meta_param_dict, adjustment, errors_warnings):
 
 def run_model(meta_param_dict, adjustment):
     return {
+        "model_version": "v1.0.0",
         "renderable": [
             {
                 "media_type": "bokeh",
@@ -103,7 +104,7 @@ def test_serialization_error():
         ft.test()
 
 
-def test_FunctionsTest():
+def test_validate_inputs_returns_tuple():
     ft = FunctionsTest(
         get_inputs=get_inputs,
         validate_inputs=validate_inputs_returns_tuple,

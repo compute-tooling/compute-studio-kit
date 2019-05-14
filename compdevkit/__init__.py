@@ -16,7 +16,7 @@ import s3like
 from .exceptions import SerializationError
 
 
-__version__ = "1.3.2"
+__version__ = "1.4.0"
 
 Num = Union[int, float]
 JSONLike = Union[dict, str]
@@ -74,7 +74,7 @@ class Output(Schema):
 
 class Result(Schema):
     """Serializer for load_to_S3like"""
-
+    model_version = fields.Str()
     renderable = fields.Nested(Output, many=True)
     downloadable = fields.Nested(Output, many=True)
 
@@ -215,4 +215,5 @@ class FunctionsTest:
         result = self.run_model(mp_spec, self.ok_adjustment)
 
         assert Result().load(result)
+        assert result.pop("model_version")
         assert s3like.write_to_s3like(uuid.uuid4(), result, do_upload=False)
