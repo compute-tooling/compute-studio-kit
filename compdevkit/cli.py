@@ -1,4 +1,7 @@
 from pathlib import Path
+import argparse
+
+import requests
 
 functionstemplate = "# Write or import your COMP functions here."
 
@@ -59,3 +62,23 @@ def init():
     (test / "__init__.py").touch()
 
     write_template(test / "test_functions.py", testfunctionstemplate)
+
+
+def comp_token():
+    parser = argparse.ArgumentParser(description="Helper for getting comp credentials.")
+    parser.add_argument("--username", help="COMP username", required=True)
+    parser.add_argument("--password", help="COMP password", required=True)
+    parser.add_argument("--quiet", "-q", help="Just print token", required=False, action="store_true")
+    args = parser.parse_args()
+
+    resp = requests.post(
+        "https://www.compmodels.org/api-token-auth/",
+        json={"username": args.username, "password": args.password}
+    )
+    if resp.status_code == 200:
+        if args.quiet:
+            print(resp.json()["token"])
+        else:
+            print("Token: ", resp.json()["token"])
+    else:
+        print("Authentication failed.")

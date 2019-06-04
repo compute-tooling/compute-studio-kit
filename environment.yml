@@ -4,6 +4,7 @@ channels:
 dependencies:
   - paramtools
   - pytest
+  - requests
   - pip
   - pip:
     - pre-commit
