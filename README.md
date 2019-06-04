@@ -35,7 +35,7 @@ def test_get_parameters():
 
 ```
 
-## Get your [COMPmodels.org](https://www.compmodels.org) API token
+## Get your [COMP API](https://docs.compmodels.org/api/guide/) token
 
 ```bash
 $ cdk-token --username myuser --password mypass
