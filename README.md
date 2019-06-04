@@ -1,6 +1,8 @@
 # Comp-Developer-Toolkit
 
-`compdevkit` tests your model's functions against the [COMP criteria](https://comp-org.github.io/comp-ce/publish/functions/). If your functions pass the `compdevkit` tests, then you can be reasonably sure that the functions will work on COMPmodels.org.
+`compdevkit` tests your model's functions against the [COMP criteria](https://docs.compmodels.org/publish/functions/). If your functions pass the `compdevkit` tests, then you can be reasonably sure that the functions will work on COMPmodels.org.
+
+COMP Developer toolkit also provides a helper command for retrieving your [COMP API](https://docs.compmodels.org/api/guide/) token.
 
 ## Install `compdevkit`
 
@@ -11,7 +13,7 @@ pip install compdevkit
 ## Set up the `comp` directory
 
 ```bash
-cdk-init
+$ cdk-init
 ```
 
 ## Test your functions
@@ -31,6 +33,13 @@ def test_get_parameters():
     )
     ta.test()
 
+```
+
+## Get your [COMPmodels.org](https://www.compmodels.org) API token
+
+```bash
+$ cdk-token --username myuser --password mypass
+Token: your-token-here
 ```
 
 ## Run the tests
