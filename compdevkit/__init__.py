@@ -16,7 +16,7 @@ import s3like
 from .exceptions import SerializationError
 
 
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 
 Num = Union[int, float]
 JSONLike = Union[dict, str]
@@ -37,7 +37,6 @@ class Parameters(paramtools.Parameters):
             validator_name,
             spec[param]["validators"][validator_name],
             param,
-            "",
             {"value": param_spec["value"][0]["value"]},
             self.specification(use_state=False),
         )
