@@ -16,7 +16,7 @@ import s3like
 from .exceptions import SerializationError
 
 
-__version__ = "1.6.0"
+__version__ = "1.6.1"
 
 Num = Union[int, float]
 JSONLike = Union[dict, str]
