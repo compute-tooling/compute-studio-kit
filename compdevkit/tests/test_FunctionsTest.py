@@ -76,7 +76,8 @@ def run_model(meta_param_dict, adjustment):
             {"media_type": "table", "title": "table stuff", "data": "<table/>"},
         ],
         "downloadable": [
-            {"media_type": "CSV", "title": "CSV file", "data": "comma,sep,values\n"}
+            {"media_type": "CSV", "title": "CSV file", "data": "comma,sep,values\n"},
+            {"media_type": "PDF", "title": "PDF file", "data": b"pdf data"},
         ],
     }
 

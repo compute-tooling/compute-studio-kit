@@ -60,24 +60,6 @@ class ErrorsWarnings(Schema):
     warnings = fields.Dict(keys=fields.Str(), values=fields.List(fields.Str()))
 
 
-class Output(Schema):
-    title = fields.Str()
-    media_type = fields.Str(
-        validate=validate.OneOf(
-            choices=["bokeh", "table", "CSV", "PNG", "JPEG", "MP3", "MP4", "HDF5"]
-        )
-    )
-    # Data could be a string or dict. It depends on the media type.
-    data = fields.Field()
-
-
-class Result(Schema):
-    """Serializer for load_to_S3like"""
-    model_version = fields.Str()
-    renderable = fields.Nested(Output, many=True)
-    downloadable = fields.Nested(Output, many=True)
-
-
 class FunctionsTest:
     def __init__(
         self,
@@ -203,7 +185,7 @@ class FunctionsTest:
                 )
 
     def test_run_model(self):
-        init_metaparams, init_modparams = self.get_inputs({})
+        init_metaparams, _ = self.get_inputs({})
 
         class MetaParams(Parameters):
             array_first = True
@@ -213,6 +195,11 @@ class FunctionsTest:
 
         result = self.run_model(mp_spec, self.ok_adjustment)
 
-        assert Result().load(result)
-        assert result.pop("model_version")
+        assert (
+            "model_version" in result, 
+            "model_version must be returned with the "
+            "downloadable and renderable outputs"
+        )
+        result.pop("model_version")
+        assert s3like.LocalResult().load(result)
         assert s3like.write_to_s3like(uuid.uuid4(), result, do_upload=False)
