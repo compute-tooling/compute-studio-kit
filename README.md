@@ -1,4 +1,4 @@
-# Compute-Studio-Kit
+# Compute Studio Kit
 
 `cskit` tests your model's functions against the [Compute Studio criteria](https://docs.compute.studio/publish/functions/). If your functions pass the `cskit` tests, then you can be reasonably sure that the functions will work on compute.studio.
 
