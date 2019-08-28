@@ -7,6 +7,7 @@ import itertools
 import random
 import json
 import uuid
+import warnings
 
 from marshmallow import fields, Schema, validate
 import paramtools
@@ -15,8 +16,9 @@ import s3like
 
 from .exceptions import SerializationError
 
+warnings.warn("compdevkit has been renamed to cskit. 1.7.0 is the last version to be released under the name compdevkit.")
 
-__version__ = "1.6.1"
+__version__ = "1.7.0"
 
 Num = Union[int, float]
 JSONLike = Union[dict, str]
@@ -195,11 +197,7 @@ class FunctionsTest:
 
         result = self.run_model(mp_spec, self.ok_adjustment)
 
-        assert (
-            "model_version" in result, 
-            "model_version must be returned with the "
-            "downloadable and renderable outputs"
-        )
+        assert "model_version" in result
         result.pop("model_version")
         assert s3like.LocalResult().load(result)
         assert s3like.write_to_s3like(uuid.uuid4(), result, do_upload=False)
