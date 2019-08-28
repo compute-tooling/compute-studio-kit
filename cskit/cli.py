@@ -3,11 +3,11 @@ import argparse
 
 import requests
 
-functionstemplate = "# Write or import your COMP functions here."
+functionstemplate = "# Write or import your Compute Studio functions here."
 
-testfunctionstemplate = """from compdevkit import FunctionsTest
+testfunctionstemplate = """from cskit import FunctionsTest
 
-from compconfig import functions
+from cskit import functions
 
 
 def test_functions():
@@ -17,7 +17,7 @@ def test_functions():
 
 setuptemplate = """\"\"\"
 setup.py is used to build a light-weight python package around your
-COMP code. Add a MANIFEST.in file to specify data files that should
+Compute Studio code. Add a MANIFEST.in file to specify data files that should
 be included with this package. Read more here:
 https://docs.python.org/3.8/distutils/sourcedist.html#specifying-the-files-to-distribute
 \"\"\"
@@ -26,9 +26,9 @@ import setuptools
 import os
 
 setuptools.setup(
-    name="compconfig",
-    description="COMP configuration files.",
-    url="https://github.com/comp-org/COMP-Developer-Toolkit",
+    name="csconfig",
+    description="Compute Studio configuration files.",
+    url="https://github.com/compute-studio-org/Compute-Studio-Toolkit",
     packages=setuptools.find_packages(),
     include_package_data=True,
 )
@@ -44,19 +44,19 @@ def write_template(path, template):
 
 
 def init():
-    comptoplevel = Path.cwd() / "compconfig"
-    comptoplevel.mkdir(exist_ok=True)
-    write_template(comptoplevel / "setup.py", setuptemplate)
-    write_template(comptoplevel / "install.sh", installtemplate)
+    cstoplevel = Path.cwd() / "csconfig"
+    cstoplevel.mkdir(exist_ok=True)
+    write_template(cstoplevel / "setup.py", setuptemplate)
+    write_template(cstoplevel / "install.sh", installtemplate)
 
-    comp = comptoplevel / "compconfig"
-    comp.mkdir(exist_ok=True)
+    cs = cstoplevel / "csconfig"
+    cs.mkdir(exist_ok=True)
 
-    (comp / "__init__.py").touch()
+    (cs / "__init__.py").touch()
 
-    write_template(comp / "functions.py", functionstemplate)
+    write_template(cs / "functions.py", functionstemplate)
 
-    test = comp / "tests"
+    test = cs / "tests"
     test.mkdir(exist_ok=True)
 
     (test / "__init__.py").touch()
@@ -64,15 +64,15 @@ def init():
     write_template(test / "test_functions.py", testfunctionstemplate)
 
 
-def comp_token():
-    parser = argparse.ArgumentParser(description="Helper for getting comp credentials.")
-    parser.add_argument("--username", help="COMP username", required=True)
-    parser.add_argument("--password", help="COMP password", required=True)
+def cs_token():
+    parser = argparse.ArgumentParser(description="Helper for getting Compute Studio credentials.")
+    parser.add_argument("--username", help="Compute Studio username", required=True)
+    parser.add_argument("--password", help="Compute Studio password", required=True)
     parser.add_argument("--quiet", "-q", help="Just print token", required=False, action="store_true")
     args = parser.parse_args()
 
     resp = requests.post(
-        "https://www.compmodels.org/api-token-auth/",
+        "https://compute.studio/api-token-auth/",
         json={"username": args.username, "password": args.password}
     )
     if resp.status_code == 200:

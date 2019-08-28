@@ -1,7 +1,7 @@
 import pytest
 import paramtools
 
-from compdevkit import FunctionsTest, SerializationError
+from cskit import FunctionsTest, SerializationError
 
 
 class MetaParams(paramtools.Parameters):

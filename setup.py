@@ -5,21 +5,21 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setuptools.setup(
-    name="compdevkit",
+    name="cskit",
     version=os.environ.get("VERSION", "0.0.0"),
     author="Hank Doupe",
     author_email="henrymdoupe@gmail.com",
-    description=("Developer tools for compmodels.org."),
+    description=("Developer tools for compute.studio."),
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/comp-org/COMP-Developer-Toolkit",
+    url="https://github.com/compute-studio-org/Compute-Studio-Toolkit",
     packages=setuptools.find_packages(),
     install_requires=["paramtools>=0.7.0", "boto3", "s3like>=1.3.1", "requests"],
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "cdk-init=compdevkit.cli:init",
-            "cdk-token=compdevkit.cli:comp_token",
+            "csk-init=cskit.cli:init",
+            "csk-token=cskit.cli:cs_token",
         ]
     },
     classifiers=[
