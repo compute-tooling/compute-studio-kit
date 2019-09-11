@@ -14,7 +14,7 @@ import paramtools
 import numpy as np
 import s3like
 
-from .exceptions import SerializationError
+from .exceptions import CSKitError, SerializationError
 
 __version__ = "1.7.0"
 
@@ -62,20 +62,37 @@ class ErrorsWarnings(Schema):
 
 class CoreTestMeta(type):
     def __new__(cls, clsname, bases, attrs):
-        for attr in ["get_inputs", "validate_inputs", "run_model"]:
+        for attr in ["get_version", "get_inputs", "validate_inputs", "run_model"]:
             if attrs.get(attr):
                 attrs[attr] = staticmethod(attrs[attr])
         return super(CoreTestMeta, cls).__new__(cls, clsname, bases, attrs)
 
 
 class CoreTestFunctions(metaclass=CoreTestMeta):
+    get_version: Callable[[], str]
     get_inputs: Callable[[dict], tuple]
     validate_inputs: Callable[[dict, dict], tuple]
     run_model: Callable[[dict, dict], dict]
     ok_adjustment: dict
     bad_adjustment: dict
 
+    def test_all_data_specified(self):
+        for function in ["get_version", "get_inputs", "validate_inputs", "run_model"]:
+            if not hasattr(self, function):
+                raise CSKitError(f"Function '{function}' was not set on the test class.")
+
+        if not hasattr(self, "ok_adjustment"):
+            raise CSKitError("An example of valid data must be set on the test class as 'ok_adjustment'")
+
+        if not hasattr(self, "ok_adjustment"):
+            raise CSKitError("An example of invalid data must be set on the test class as 'bad_adjustment'")
+
+    def test_get_version(self):
+        self.test_all_data_specified()
+        assert self.get_version()
+
     def test_get_inputs(self):
+        self.test_all_data_specified()
         init_metaparams, init_modparams = self.get_inputs({})
 
         try:
@@ -123,6 +140,7 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
                 assert params.load({"parameters": modparams})
 
     def test_validate_inputs(self):
+        self.test_all_data_specified()
         init_metaparams, init_modparams = self.get_inputs({})
 
         class MetaParams(Parameters):
@@ -180,6 +198,7 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
                 )
 
     def test_run_model(self):
+        self.test_all_data_specified()
         init_metaparams, _ = self.get_inputs({})
 
         class MetaParams(Parameters):

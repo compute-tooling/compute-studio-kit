@@ -36,6 +36,10 @@ class ModelParameters(paramtools.Parameters):
     }
 
 
+def get_version():
+    return "1.0.0"
+
+
 def get_inputs(meta_param_dict):
     return (
         MetaParams().specification(meta_data=True, serializable=True),
@@ -83,20 +87,22 @@ def run_model(meta_param_dict, adjustment):
 
 
 class TestFunctions1(CoreTestFunctions):
-    get_inputs=get_inputs
-    validate_inputs=validate_inputs
-    run_model=run_model
-    ok_adjustment={"mock": {"model_param": 2}}
-    bad_adjustment={"mock": {"model_param": "not an int"}}
+    get_version = get_version
+    get_inputs = get_inputs
+    validate_inputs = validate_inputs
+    run_model = run_model
+    ok_adjustment = {"mock": {"model_param": 2}}
+    bad_adjustment = {"mock": {"model_param": "not an int"}}
 
 
 def test_serialization_error():
     class TestFunctions2(CoreTestFunctions):
-        get_inputs=get_inputs_ser_error
+        get_version = get_version
+        get_inputs = get_inputs_ser_error
         validate_inputs=validate_inputs
-        run_model=run_model
-        ok_adjustment={"mock": {"model_param": 2}}
-        bad_adjustment={"mock": {"model_param": "not an int"}}
+        run_model = run_model
+        ok_adjustment = {"mock": {"model_param": 2}}
+        bad_adjustment = {"mock": {"model_param": "not an int"}}
 
     ft = TestFunctions2()
     with pytest.raises(SerializationError):
@@ -113,8 +119,9 @@ def test_missing_functions():
 
 
 class TestFunctions3(CoreTestFunctions):
-    get_inputs=get_inputs
-    validate_inputs=validate_inputs_returns_tuple
-    run_model=run_model
-    ok_adjustment={"mock": {"model_param": 2}}
-    bad_adjustment={"mock": {"model_param": "not an int"}}
+    get_version = get_version
+    get_inputs = get_inputs
+    validate_inputs = validate_inputs_returns_tuple
+    run_model = run_model
+    ok_adjustment = {"mock": {"model_param": 2}}
+    bad_adjustment = {"mock": {"model_param": "not an int"}}

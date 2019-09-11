@@ -1,6 +1,9 @@
-class CSKException(Exception):
+class CSKitException(Exception):
     pass
 
 
-class SerializationError(CSKException):
+class CSKitError(CSKitException):
+    pass
+
+class SerializationError(CSKitException):
     pass
