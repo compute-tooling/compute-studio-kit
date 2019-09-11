@@ -60,25 +60,20 @@ class ErrorsWarnings(Schema):
     warnings = fields.Dict(keys=fields.Str(), values=fields.List(fields.Str()))
 
 
-class FunctionsTest:
-    def __init__(
-        self,
-        get_inputs: Callable,
-        validate_inputs: Callable,
-        run_model: Callable,
-        ok_adjustment: dict,
-        bad_adjustment: dict,
-    ):
-        self.get_inputs = get_inputs
-        self.validate_inputs = validate_inputs
-        self.run_model = run_model
-        self.ok_adjustment = ok_adjustment
-        self.bad_adjustment = bad_adjustment
+class CoreTestMeta(type):
+    def __new__(cls, clsname, bases, attrs):
+        for attr in ["get_inputs", "validate_inputs", "run_model"]:
+            if attrs.get(attr):
+                attrs[attr] = staticmethod(attrs[attr])
+        return super(CoreTestMeta, cls).__new__(cls, clsname, bases, attrs)
 
-    def test(self):
-        self.test_get_inputs()
-        self.test_validate_inputs()
-        self.test_run_model()
+
+class CoreTestFunctions(metaclass=CoreTestMeta):
+    get_inputs: Callable[[dict], tuple]
+    validate_inputs: Callable[[dict, dict], tuple]
+    run_model: Callable[[dict, dict], dict]
+    ok_adjustment: dict
+    bad_adjustment: dict
 
     def test_get_inputs(self):
         init_metaparams, init_modparams = self.get_inputs({})

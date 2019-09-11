@@ -1,7 +1,7 @@
 import pytest
 import paramtools
 
-from cs_kit import FunctionsTest, SerializationError
+from cs_kit import CoreTestFunctions, SerializationError
 
 
 class MetaParams(paramtools.Parameters):
@@ -82,35 +82,39 @@ def run_model(meta_param_dict, adjustment):
     }
 
 
-def test_FunctionsTest():
-    ft = FunctionsTest(
-        get_inputs=get_inputs,
-        validate_inputs=validate_inputs,
-        run_model=run_model,
-        ok_adjustment={"mock": {"model_param": 2}},
-        bad_adjustment={"mock": {"model_param": "not an int"}},
-    )
-    ft.test()
+class TestFunctions1(CoreTestFunctions):
+    get_inputs=get_inputs
+    validate_inputs=validate_inputs
+    run_model=run_model
+    ok_adjustment={"mock": {"model_param": 2}}
+    bad_adjustment={"mock": {"model_param": "not an int"}}
 
 
 def test_serialization_error():
+    class TestFunctions2(CoreTestFunctions):
+        get_inputs=get_inputs_ser_error
+        validate_inputs=validate_inputs
+        run_model=run_model
+        ok_adjustment={"mock": {"model_param": 2}}
+        bad_adjustment={"mock": {"model_param": "not an int"}}
+
+    ft = TestFunctions2()
     with pytest.raises(SerializationError):
-        ft = FunctionsTest(
-            get_inputs=get_inputs_ser_error,
-            validate_inputs=validate_inputs,
-            run_model=run_model,
-            ok_adjustment={"mock": {"model_param": 2}},
-            bad_adjustment={"mock": {"model_param": "not an int"}},
-        )
-        ft.test()
+        ft.test_get_inputs()
 
 
-def test_validate_inputs_returns_tuple():
-    ft = FunctionsTest(
-        get_inputs=get_inputs,
-        validate_inputs=validate_inputs_returns_tuple,
-        run_model=run_model,
-        ok_adjustment={"mock": {"model_param": 2}},
-        bad_adjustment={"mock": {"model_param": "not an int"}},
-    )
-    ft.test()
+def test_missing_functions():
+    class TestFunctions3(CoreTestFunctions):
+        pass
+
+    ft = TestFunctions3()
+    with pytest.raises(AttributeError):
+        ft.get_inputs({})
+
+
+class TestFunctions3(CoreTestFunctions):
+    get_inputs=get_inputs
+    validate_inputs=validate_inputs_returns_tuple
+    run_model=run_model
+    ok_adjustment={"mock": {"model_param": 2}}
+    bad_adjustment={"mock": {"model_param": "not an int"}}

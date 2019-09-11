@@ -3,16 +3,34 @@ import argparse
 
 import requests
 
-functionstemplate = "# Write or import your Compute Studio functions here."
+functionstemplate = """# Write or import your Compute Studio functions here.
 
-testfunctionstemplate = """from cs_kit import FunctionsTest
+
+def get_inputs(meta_param_dict):
+    pass
+
+
+def validate_inputs(meta_param_dict, adjustment, errors_warnings):
+    pass
+
+
+def run_model(meta_param_dict, adjustment):
+    pass
+
+"""
+
+testfunctionstemplate = """from cs_kit import CoreTestFunctions
 
 from cs_config import functions
 
 
-def test_functions():
-    # test your functions with FunctionsTest here
-    pass
+class TestFunctions1(CoreTestFunctions):
+    get_inputs = functions.get_inputs
+    validate_inputs = functions.validate_inputs
+    run_model = functions.run_model
+    ok_adjustment = {} # your valid inputs here
+    bad_adjustment = {} # your invalid
+
 """
 
 setuptemplate = """\"\"\"
