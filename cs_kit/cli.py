@@ -6,6 +6,10 @@ import requests
 functionstemplate = """# Write or import your Compute Studio functions here.
 
 
+def get_version():
+    pass
+
+
 def get_inputs(meta_param_dict):
     pass
 
@@ -25,7 +29,7 @@ from cs_config import functions
 
 
 class TestFunctions1(CoreTestFunctions):
-    get_inputs = functions.get_inputs
+    get_version = functions.get_version
     validate_inputs = functions.validate_inputs
     run_model = functions.run_model
     ok_adjustment = {} # your valid inputs here
