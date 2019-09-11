@@ -10,13 +10,47 @@ Compute Studio Kit also provides a helper command for retrieving your [Compute S
 pip install cs-kit
 ```
 
-## Set up the `csconfig` directory
+## Set up the `cs_config` directory
 
 ```bash
-csk-init
+$ csk-init
+$ tree cs-config/
+cs-config/
+├── cs_config
+│   ├── functions.py
+│   ├── __init__.py
+│   └── tests
+│       ├── __init__.py
+│       └── test_functions.py
+├── install.sh
+└── setup.py
+
 ```
 
-## Test your functions in `cs-config/cs_config/functions.py`
+## Write your functions in `cs-config/cs_config/functions.py`
+
+```python
+# Write or import your Compute Studio functions here.
+
+
+def get_version():
+    pass
+
+
+def get_inputs(meta_param_dict):
+    pass
+
+
+def validate_inputs(meta_param_dict, adjustment, errors_warnings):
+    pass
+
+
+def run_model(meta_param_dict, adjustment):
+    pass
+
+```
+
+## Test your functions in `cs-config/cs_config/tests/test_functions.py`
 
 ```python
 from cs_kit import CoreTestFunctions
@@ -38,6 +72,12 @@ class TestFunctions1(CoreTestFunctions):
 
 ```bash
 py.test cs_config
+```
+
+## Write your installation instructions in `cs-config/install.sh`
+
+```bash
+conda install your-project
 ```
 
 ## Get your [Compute Studio API](https://docs.compute.studio/api/guide/) token
