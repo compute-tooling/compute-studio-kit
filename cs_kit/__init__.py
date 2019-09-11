@@ -16,8 +16,6 @@ import s3like
 
 from .exceptions import SerializationError
 
-warnings.warn("compdevkit has been renamed to cskit. 1.7.0 is the last version to be released under the name compdevkit.")
-
 __version__ = "1.7.0"
 
 Num = Union[int, float]

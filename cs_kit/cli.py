@@ -5,9 +5,9 @@ import requests
 
 functionstemplate = "# Write or import your Compute Studio functions here."
 
-testfunctionstemplate = """from cskit import FunctionsTest
+testfunctionstemplate = """from cs_kit import FunctionsTest
 
-from cskit import functions
+from cs_config import functions
 
 
 def test_functions():
@@ -26,7 +26,7 @@ import setuptools
 import os
 
 setuptools.setup(
-    name="csconfig",
+    name="cs-config",
     description="Compute Studio configuration files.",
     url="https://github.com/compute-studio-org/Compute-Studio-Toolkit",
     packages=setuptools.find_packages(),
@@ -44,12 +44,12 @@ def write_template(path, template):
 
 
 def init():
-    cstoplevel = Path.cwd() / "csconfig"
+    cstoplevel = Path.cwd() / "cs-config"
     cstoplevel.mkdir(exist_ok=True)
     write_template(cstoplevel / "setup.py", setuptemplate)
     write_template(cstoplevel / "install.sh", installtemplate)
 
-    cs = cstoplevel / "csconfig"
+    cs = cstoplevel / "cs_config"
     cs.mkdir(exist_ok=True)
 
     (cs / "__init__.py").touch()

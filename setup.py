@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setuptools.setup(
-    name="cskit",
+    name="cs-kit",
     version=os.environ.get("VERSION", "0.0.0"),
     author="Hank Doupe",
     author_email="henrymdoupe@gmail.com",
@@ -18,8 +18,8 @@ setuptools.setup(
     include_package_data=True,
     entry_points={
         "console_scripts": [
-            "csk-init=cskit.cli:init",
-            "csk-token=cskit.cli:cs_token",
+            "csk-init=cs_kit.cli:init",
+            "csk-token=cs_kit.cli:cs_token",
         ]
     },
     classifiers=[

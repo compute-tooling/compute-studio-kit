@@ -1,4 +1,4 @@
-name: compdevkit-dev
+name: cs-kit-dev
 channels:
   - conda-forge
 dependencies:
