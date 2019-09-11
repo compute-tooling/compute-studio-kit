@@ -50,7 +50,7 @@ import os
 setuptools.setup(
     name="cs-config",
     description="Compute Studio configuration files.",
-    url="https://github.com/compute-studio-org/Compute-Studio-Toolkit",
+    url="https://github.com/compute-tooling/compute-studio-kit",
     packages=setuptools.find_packages(),
     include_package_data=True,
 )
