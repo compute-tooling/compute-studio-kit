@@ -10,7 +10,7 @@ Compute Studio Kit also provides a helper command for retrieving your [Compute S
 pip install cs-kit
 ```
 
-## Set up the `cs_config` directory
+## Set up the `cs-config` directory
 
 ```bash
 $ csk-init
@@ -71,7 +71,7 @@ class TestFunctions1(CoreTestFunctions):
 ## Run your cs-config tests
 
 ```bash
-py.test cs_config
+py.test cs-config
 ```
 
 ## Write your installation instructions in `cs-config/install.sh`
