@@ -72,7 +72,6 @@ def validate_inputs_returns_tuple(meta_param_dict, adjustment, errors_warnings):
 
 def run_model(meta_param_dict, adjustment):
     return {
-        "model_version": "v1.0.0",
         "renderable": [
             {
                 "media_type": "bokeh",

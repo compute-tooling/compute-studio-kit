@@ -9,3 +9,5 @@ dependencies:
   - pre-commit
   - black
   - flake8
+  - pip:
+    - cs-storage
