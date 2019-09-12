@@ -18,6 +18,33 @@ def load_model_parameters(model_parameters):
         assert params
 
 
+def check_get_inputs(inputs):
+    if not isinstance(inputs, dict) or not set(inputs.keys()) == {
+        "meta_parameters",
+        "model_parameters",
+    }:
+        raise CSKitError(
+            "Function 'get_inputs' must return a dictionary with keys: "
+            "'meta_parameters' and 'model_parameters'"
+        )
+
+
+def check_validate_inputs(validate_res):
+    if not isinstance(validate_res, dict):
+        raise CSKitError("Function 'validate_res' must return a dictionary.")
+
+    if "errors_warnings" not in validate_res:
+        raise CSKitError("Function 'validate_res' must include 'errors_warnings'.")
+
+    if validate_res.keys() - {"errors_warnings", "custom_adjustment"}:
+        raise CSKitError(
+            f"\nFunction 'validate_res' may only return a dictionary with "
+            f"keys: \n'errors_warnings' and 'custom-adjustment'.\n"
+            f"Keys {', '.join(validate_res.keys() - {'errors_warnings', 'custom_adjustment'})} "
+            f"were also included."
+        )
+
+
 class CoreTestMeta(type):
     def __new__(cls, clsname, bases, attrs):
         print(attrs)
@@ -59,9 +86,7 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
     def test_get_inputs(self):
         self.test_all_data_specified()
         inputs = self.get_inputs({})
-
-        assert set(inputs.keys()) == {"meta_parameters", "model_parameters"}
-
+        check_get_inputs(inputs)
         init_metaparams = inputs["meta_parameters"]
         init_modparams = inputs["model_parameters"]
 
@@ -114,6 +139,8 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
     def test_validate_inputs(self):
         self.test_all_data_specified()
         inputs = self.get_inputs({})
+        check_get_inputs(inputs)
+
         init_metaparams = inputs["meta_parameters"]
         init_modparams = inputs["model_parameters"]
 
@@ -131,6 +158,7 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
         valid_res = self.validate_inputs(
             mp_spec, self.ok_adjustment, copy.deepcopy(ew_template)
         )
+        check_validate_inputs(valid_res)
         for major_sect, ew_dict in valid_res["errors_warnings"].items():
             ew_schema.load(ew_dict)
             if len(ew_dict.get("errors")) > 0:
@@ -150,7 +178,7 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
         invalid_res = self.validate_inputs(
             mp_spec, self.bad_adjustment, copy.deepcopy(ew_template)
         )
-
+        check_validate_inputs(valid_res)
         for major_sect, ew_dict in invalid_res["errors_warnings"].items():
             ew_schema.load(ew_dict)
             if len(ew_dict.get("errors")) == 0:
@@ -167,6 +195,7 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
     def test_run_model(self):
         self.test_all_data_specified()
         inputs = self.get_inputs({})
+        check_get_inputs(inputs)
 
         class MetaParams(Parameters):
             array_first = True
