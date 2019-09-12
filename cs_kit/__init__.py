@@ -1,6 +1,7 @@
 from typing import Callable, Union
 from collections import defaultdict
 from datetime import datetime, date
+from functools import reduce
 import copy
 import functools
 import itertools
@@ -19,7 +20,6 @@ from .exceptions import CSKitError, SerializationError
 __version__ = "1.7.0"
 
 Num = Union[int, float]
-JSONLike = Union[dict, str]
 
 
 class Parameters(paramtools.Parameters):
@@ -60,8 +60,19 @@ class ErrorsWarnings(Schema):
     warnings = fields.Dict(keys=fields.Str(), values=fields.List(fields.Str()))
 
 
+def load_model_parameters(model_parameters):
+    for sect, _defaults in model_parameters.items():
+        params = type(
+            f"Params{sect}",
+            (Parameters, ),
+            {"defaults": _defaults}
+        )()
+        assert params
+
+
 class CoreTestMeta(type):
     def __new__(cls, clsname, bases, attrs):
+        print(attrs)
         for attr in ["get_version", "get_inputs", "validate_inputs", "run_model"]:
             if attrs.get(attr):
                 attrs[attr] = staticmethod(attrs[attr])
@@ -93,7 +104,12 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
 
     def test_get_inputs(self):
         self.test_all_data_specified()
-        init_metaparams, init_modparams = self.get_inputs({})
+        inputs = self.get_inputs({})
+
+        assert set(inputs.keys()) == {"meta_parameters", "model_parameters"}
+
+        init_metaparams = inputs["meta_parameters"]
+        init_modparams = inputs["model_parameters"]
 
         try:
             json.dumps(init_metaparams)
@@ -104,6 +120,7 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
                     f"\nHint: try setting `serializable=True` in `Parameters.specification`."
                 )
             )
+
         try:
             json.dumps(init_modparams)
         except TypeError as e:
@@ -118,94 +135,92 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
             array_first = True
             defaults = init_metaparams
 
+
         metaparams = MetaParams()
         assert metaparams
 
-        params = Params()
-        for modparams in init_modparams.values():
-            assert params.load({"parameters": modparams})
+        load_model_parameters(init_modparams)
 
-        mp_names = list(metaparams.specification().keys())
         mp_grid = []
+        mp_names = list(metaparams.keys())
         for mp_name in mp_names:
             mp_grid.append(metaparams.param_grid(mp_name))
 
+        n_combinations = reduce(lambda x, y: len(x) * len(y), mp_grid, [1])
         mp_grid = itertools.product(*mp_grid)
 
-        for tup in mp_grid:
-            _, modparams_ = self.get_inputs(
-                {mp_names[i]: tup[i] for i in range(len(mp_names))}
+        skip = n_combinations > 9
+        for loopcount, tup in enumerate(mp_grid):
+            if skip and not loopcount % 3:
+                continue
+            new_inputs = self.get_inputs(
+                {mp_names[i]: tup[i] for i in range(len(metaparams.keys()))}
             )
-            for modparams in modparams_.values():
-                assert params.load({"parameters": modparams})
+            load_model_parameters(new_inputs["model_parameters"])
 
     def test_validate_inputs(self):
         self.test_all_data_specified()
-        init_metaparams, init_modparams = self.get_inputs({})
+        inputs = self.get_inputs({})
+        init_metaparams = inputs["meta_parameters"]
+        init_modparams = inputs["model_parameters"]
 
         class MetaParams(Parameters):
             array_first = True
             defaults = init_metaparams
 
-        mp_spec = MetaParams().specification()
+        mp_spec = MetaParams().items()
 
         ew_template = {
             major_sect: {"errors": {}, "warnings": {}} for major_sect in init_modparams
         }
         ew_schema = ErrorsWarnings()
 
-        res = self.validate_inputs(
+        valid_res = self.validate_inputs(
             mp_spec, self.ok_adjustment, copy.deepcopy(ew_template)
         )
-        if isinstance(res, tuple):
-            ew_result, parsedparams = res
-        else:
-            ew_result = res
-            parsedparams = ()
+        for major_sect, ew_dict in valid_res["errors_warnings"].items():
+            ew_schema.load(ew_dict)
+            if len(ew_dict.get("errors")) > 0:
+                raise CSKitError(
+                    f"Expected section {major_sect} to be valid but it has errors:\n"
+                    f"{ew_dict}"
+                )
 
-        for _, ew_dict in ew_result.items():
-            assert ew_schema.load(ew_dict)
-            assert len(ew_dict.get("errors")) == 0
-            assert len(ew_dict.get("warnings")) == 0
-
-        if parsedparams:
+        if valid_res.get("custom_adjustment"):
             try:
-                json.dumps(parsedparams)
+                json.dumps(valid_res["custom_adjustment"])
             except TypeError as e:
                 raise SerializationError(
                     f"Parameters must be JSON serializable: \n\n\t{str(e)}\n"
                 )
 
-        res = self.validate_inputs(
+        invalid_res = self.validate_inputs(
             mp_spec, self.bad_adjustment, copy.deepcopy(ew_template)
         )
-        if isinstance(res, tuple):
-            ew_result, parsedparams = res
-        else:
-            ew_result = res
-            parsedparams = ()
 
-        for major_sect, ew_dict in ew_result.items():
-            assert ew_schema.load(ew_dict)
-            assert len(ew_dict.get("errors")) > 0
+        for major_sect, ew_dict in invalid_res["errors_warnings"].items():
+            ew_schema.load(ew_dict)
+            if len(ew_dict.get("errors")) == 0:
+                raise CSKitError(f"Expected section {major_sect} to have errors.")
 
-        if parsedparams:
+        if invalid_res.get("custom_adjustment"):
             try:
-                json.dumps(parsedparams)
+                json.dumps(invalid_res["custom_adjustment"])
             except TypeError as e:
                 raise SerializationError(
                     f"Parameters must be JSON serializable: \n\n\t{str(e)}\n"
                 )
+
 
     def test_run_model(self):
         self.test_all_data_specified()
-        init_metaparams, _ = self.get_inputs({})
+        inputs = self.get_inputs({})
 
         class MetaParams(Parameters):
             array_first = True
-            defaults = init_metaparams
+            defaults = inputs["meta_parameters"]
 
-        mp_spec = MetaParams().specification()
+        mp_spec = MetaParams().items()
 
         result = self.run_model(mp_spec, self.ok_adjustment)
 

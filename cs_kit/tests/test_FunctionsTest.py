@@ -41,31 +41,31 @@ def get_version():
 
 
 def get_inputs(meta_param_dict):
-    return (
-        MetaParams().specification(meta_data=True, serializable=True),
-        {"mock": ModelParameters().specification(meta_data=True, serializable=True)},
-    )
+    return {
+        "meta_parameters": MetaParams().dump(),
+        "model_parameters": {"mock": ModelParameters().dump()},
+    }
 
 
 def get_inputs_ser_error(meta_param_dict):
-    return (
-        MetaParams().specification(meta_data=True, serializable=False),
-        {"mock": ModelParameters().specification(meta_data=True, serializable=False)},
-    )
+    return {
+        "meta_parameters": MetaParams().dump(),
+        "model_parameters": {"mock": ModelParameters().specification(meta_data=True, serializable=False)},
+    }
 
 
 def validate_inputs(meta_param_dict, adjustment, errors_warnings):
     mp = ModelParameters()
     mp.adjust(adjustment["mock"], raise_errors=False)
     errors_warnings["mock"]["errors"].update(mp.errors)
-    return errors_warnings
+    return {"errors_warnings": errors_warnings}
 
 
 def validate_inputs_returns_tuple(meta_param_dict, adjustment, errors_warnings):
     mp = ModelParameters()
     mp.adjust(adjustment["mock"], raise_errors=False)
     errors_warnings["mock"]["errors"].update(mp.errors)
-    return errors_warnings, {"my": "params"}
+    return {"errors_warnings": errors_warnings, "custom_adjustment": {"my": "params"}}
 
 
 def run_model(meta_param_dict, adjustment):
