@@ -62,11 +62,7 @@ class ErrorsWarnings(Schema):
 
 def load_model_parameters(model_parameters):
     for sect, _defaults in model_parameters.items():
-        params = type(
-            f"Params{sect}",
-            (Parameters, ),
-            {"defaults": _defaults}
-        )()
+        params = type(f"Params{sect}", (Parameters,), {"defaults": _defaults})()
         assert params
 
 
@@ -90,13 +86,19 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
     def test_all_data_specified(self):
         for function in ["get_version", "get_inputs", "validate_inputs", "run_model"]:
             if not hasattr(self, function):
-                raise CSKitError(f"Function '{function}' was not set on the test class.")
+                raise CSKitError(
+                    f"Function '{function}' was not set on the test class."
+                )
 
         if not hasattr(self, "ok_adjustment"):
-            raise CSKitError("An example of valid data must be set on the test class as 'ok_adjustment'")
+            raise CSKitError(
+                "An example of valid data must be set on the test class as 'ok_adjustment'"
+            )
 
         if not hasattr(self, "ok_adjustment"):
-            raise CSKitError("An example of invalid data must be set on the test class as 'bad_adjustment'")
+            raise CSKitError(
+                "An example of invalid data must be set on the test class as 'bad_adjustment'"
+            )
 
     def test_get_version(self):
         self.test_all_data_specified()
@@ -134,7 +136,6 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
         class MetaParams(Parameters):
             array_first = True
             defaults = init_metaparams
-
 
         metaparams = MetaParams()
         assert metaparams
@@ -210,7 +211,6 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
                 raise SerializationError(
                     f"Parameters must be JSON serializable: \n\n\t{str(e)}\n"
                 )
-
 
     def test_run_model(self):
         self.test_all_data_specified()

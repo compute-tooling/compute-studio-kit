@@ -50,7 +50,9 @@ def get_inputs(meta_param_dict):
 def get_inputs_ser_error(meta_param_dict):
     return {
         "meta_parameters": MetaParams().dump(),
-        "model_parameters": {"mock": ModelParameters().specification(meta_data=True, serializable=False)},
+        "model_parameters": {
+            "mock": ModelParameters().specification(meta_data=True, serializable=False)
+        },
     }
 
 
@@ -99,7 +101,7 @@ def test_serialization_error():
     class TestFunctions2(CoreTestFunctions):
         get_version = get_version
         get_inputs = get_inputs_ser_error
-        validate_inputs=validate_inputs
+        validate_inputs = validate_inputs
         run_model = run_model
         ok_adjustment = {"mock": {"model_param": 2}}
         bad_adjustment = {"mock": {"model_param": "not an int"}}

@@ -87,15 +87,19 @@ def init():
 
 
 def cs_token():
-    parser = argparse.ArgumentParser(description="Helper for getting Compute Studio credentials.")
+    parser = argparse.ArgumentParser(
+        description="Helper for getting Compute Studio credentials."
+    )
     parser.add_argument("--username", help="Compute Studio username", required=True)
     parser.add_argument("--password", help="Compute Studio password", required=True)
-    parser.add_argument("--quiet", "-q", help="Just print token", required=False, action="store_true")
+    parser.add_argument(
+        "--quiet", "-q", help="Just print token", required=False, action="store_true"
+    )
     args = parser.parse_args()
 
     resp = requests.post(
         "https://compute.studio/api-token-auth/",
-        json={"username": args.username, "password": args.password}
+        json={"username": args.username, "password": args.password},
     )
     if resp.status_code == 200:
         if args.quiet:

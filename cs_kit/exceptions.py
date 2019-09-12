@@ -5,5 +5,6 @@ class CSKitException(Exception):
 class CSKitError(CSKitException):
     pass
 
+
 class SerializationError(CSKitException):
     pass
