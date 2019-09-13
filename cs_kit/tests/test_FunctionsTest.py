@@ -1,7 +1,7 @@
 import pytest
 import paramtools
 
-from cs_kit import FunctionsTest, SerializationError
+from cs_kit import CoreTestFunctions, CSKitError, SerializationError
 
 
 class MetaParams(paramtools.Parameters):
@@ -36,37 +36,42 @@ class ModelParameters(paramtools.Parameters):
     }
 
 
+def get_version():
+    return "1.0.0"
+
+
 def get_inputs(meta_param_dict):
-    return (
-        MetaParams().specification(meta_data=True, serializable=True),
-        {"mock": ModelParameters().specification(meta_data=True, serializable=True)},
-    )
+    return {
+        "meta_parameters": MetaParams().dump(),
+        "model_parameters": {"mock": ModelParameters().dump()},
+    }
 
 
 def get_inputs_ser_error(meta_param_dict):
-    return (
-        MetaParams().specification(meta_data=True, serializable=False),
-        {"mock": ModelParameters().specification(meta_data=True, serializable=False)},
-    )
+    return {
+        "meta_parameters": MetaParams().dump(),
+        "model_parameters": {
+            "mock": ModelParameters().specification(meta_data=True, serializable=False)
+        },
+    }
 
 
 def validate_inputs(meta_param_dict, adjustment, errors_warnings):
     mp = ModelParameters()
     mp.adjust(adjustment["mock"], raise_errors=False)
     errors_warnings["mock"]["errors"].update(mp.errors)
-    return errors_warnings
+    return {"errors_warnings": errors_warnings}
 
 
-def validate_inputs_returns_tuple(meta_param_dict, adjustment, errors_warnings):
+def validate_inputs_returns_custom_adj(meta_param_dict, adjustment, errors_warnings):
     mp = ModelParameters()
     mp.adjust(adjustment["mock"], raise_errors=False)
     errors_warnings["mock"]["errors"].update(mp.errors)
-    return errors_warnings, {"my": "params"}
+    return {"errors_warnings": errors_warnings, "custom_adjustment": {"my": "params"}}
 
 
 def run_model(meta_param_dict, adjustment):
     return {
-        "model_version": "v1.0.0",
         "renderable": [
             {
                 "media_type": "bokeh",
@@ -82,35 +87,110 @@ def run_model(meta_param_dict, adjustment):
     }
 
 
-def test_FunctionsTest():
-    ft = FunctionsTest(
-        get_inputs=get_inputs,
-        validate_inputs=validate_inputs,
-        run_model=run_model,
-        ok_adjustment={"mock": {"model_param": 2}},
-        bad_adjustment={"mock": {"model_param": "not an int"}},
-    )
-    ft.test()
+class TestFunctions1(CoreTestFunctions):
+    get_version = get_version
+    get_inputs = get_inputs
+    validate_inputs = validate_inputs
+    run_model = run_model
+    ok_adjustment = {"mock": {"model_param": 2}}
+    bad_adjustment = {"mock": {"model_param": "not an int"}}
 
 
 def test_serialization_error():
+    class TestFunctions(CoreTestFunctions):
+        get_version = get_version
+        get_inputs = get_inputs_ser_error
+        validate_inputs = validate_inputs
+        run_model = run_model
+        ok_adjustment = {"mock": {"model_param": 2}}
+        bad_adjustment = {"mock": {"model_param": "not an int"}}
+
+    ft = TestFunctions()
     with pytest.raises(SerializationError):
-        ft = FunctionsTest(
-            get_inputs=get_inputs_ser_error,
-            validate_inputs=validate_inputs,
-            run_model=run_model,
-            ok_adjustment={"mock": {"model_param": 2}},
-            bad_adjustment={"mock": {"model_param": "not an int"}},
-        )
-        ft.test()
+        ft.test_get_inputs()
 
 
-def test_validate_inputs_returns_tuple():
-    ft = FunctionsTest(
-        get_inputs=get_inputs,
-        validate_inputs=validate_inputs_returns_tuple,
-        run_model=run_model,
-        ok_adjustment={"mock": {"model_param": 2}},
-        bad_adjustment={"mock": {"model_param": "not an int"}},
-    )
-    ft.test()
+def test_missing_functions():
+    class TestFunctions(CoreTestFunctions):
+        pass
+
+    ft = TestFunctions()
+    with pytest.raises(AttributeError):
+        ft.get_inputs({})
+
+
+class TestFunctions3(CoreTestFunctions):
+    get_version = get_version
+    get_inputs = get_inputs
+    validate_inputs = validate_inputs_returns_custom_adj
+    run_model = run_model
+    ok_adjustment = {"mock": {"model_param": 2}}
+    bad_adjustment = {"mock": {"model_param": "not an int"}}
+
+
+def test_key_errors_on_get_inputs():
+    class TestFunctions(CoreTestFunctions):
+        get_version = get_version
+        get_inputs = lambda *args: "hello world"
+        validate_inputs = validate_inputs
+        run_model = run_model
+        ok_adjustment = {"mock": {"model_param": 2}}
+        bad_adjustment = {"mock": {"model_param": "not an int"}}
+
+    ft = TestFunctions()
+    with pytest.raises(CSKitError):
+        ft.test_get_inputs()
+
+    class TestFunctions(CoreTestFunctions):
+        get_version = get_version
+        get_inputs = lambda *args: {"param_meta": {}, "model_parameters": {}}
+        validate_inputs = validate_inputs
+        run_model = run_model
+        ok_adjustment = {"mock": {"model_param": 2}}
+        bad_adjustment = {"mock": {"model_param": "not an int"}}
+
+    ft = TestFunctions()
+    with pytest.raises(CSKitError):
+        ft.test_get_inputs()
+
+
+def test_key_errors_on_validate_inputs():
+    class TestFunctions(CoreTestFunctions):
+        get_version = get_version
+        get_inputs = get_inputs
+        validate_inputs = lambda *args: "hello world"
+        run_model = run_model
+        ok_adjustment = {"mock": {"model_param": 2}}
+        bad_adjustment = {"mock": {"model_param": "not an int"}}
+
+    ft = TestFunctions()
+    with pytest.raises(CSKitError):
+        ft.test_validate_inputs()
+
+    class TestFunctions(CoreTestFunctions):
+        get_version = get_version
+        get_inputs = get_inputs
+        validate_inputs = lambda *args: {"heyo": {}}
+        run_model = run_model
+        ok_adjustment = {"mock": {"model_param": 2}}
+        bad_adjustment = {"mock": {"model_param": "not an int"}}
+
+    ft = TestFunctions()
+    with pytest.raises(CSKitError):
+        ft.test_validate_inputs()
+
+    class TestFunctions(CoreTestFunctions):
+        get_version = get_version
+        get_inputs = get_inputs
+        validate_inputs = lambda *args: {
+            "errors_warnings": {},
+            "custom_adjustment": {},
+            "heyo": 2,
+        }
+        run_model = run_model
+        ok_adjustment = {"mock": {"model_param": 2}}
+        bad_adjustment = {"mock": {"model_param": "not an int"}}
+
+    ft = TestFunctions()
+    with pytest.raises(CSKitError):
+        ft.test_validate_inputs()

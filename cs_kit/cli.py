@@ -3,16 +3,38 @@ import argparse
 
 import requests
 
-functionstemplate = "# Write or import your Compute Studio functions here."
+functionstemplate = """# Write or import your Compute Studio functions here.
 
-testfunctionstemplate = """from cs_kit import FunctionsTest
+
+def get_version():
+    pass
+
+
+def get_inputs(meta_param_dict):
+    pass
+
+
+def validate_inputs(meta_param_dict, adjustment, errors_warnings):
+    pass
+
+
+def run_model(meta_param_dict, adjustment):
+    pass
+"""
+
+testfunctionstemplate = """from cs_kit import CoreTestFunctions
 
 from cs_config import functions
 
 
-def test_functions():
-    # test your functions with FunctionsTest here
-    pass
+class TestFunctions1(CoreTestFunctions):
+    get_version = functions.get_version
+    get_inputs = functions.get_inputs
+    validate_inputs = functions.validate_inputs
+    run_model = functions.run_model
+    ok_adjustment = {}  # your valid inputs here
+    bad_adjustment = {}  # your invalid inputs here
+
 """
 
 setuptemplate = """\"\"\"
@@ -28,7 +50,7 @@ import os
 setuptools.setup(
     name="cs-config",
     description="Compute Studio configuration files.",
-    url="https://github.com/compute-studio-org/Compute-Studio-Toolkit",
+    url="https://github.com/compute-tooling/compute-studio-kit",
     packages=setuptools.find_packages(),
     include_package_data=True,
 )
@@ -65,15 +87,19 @@ def init():
 
 
 def cs_token():
-    parser = argparse.ArgumentParser(description="Helper for getting Compute Studio credentials.")
+    parser = argparse.ArgumentParser(
+        description="Helper for getting Compute Studio credentials."
+    )
     parser.add_argument("--username", help="Compute Studio username", required=True)
     parser.add_argument("--password", help="Compute Studio password", required=True)
-    parser.add_argument("--quiet", "-q", help="Just print token", required=False, action="store_true")
+    parser.add_argument(
+        "--quiet", "-q", help="Just print token", required=False, action="store_true"
+    )
     args = parser.parse_args()
 
     resp = requests.post(
         "https://compute.studio/api-token-auth/",
-        json={"username": args.username, "password": args.password}
+        json={"username": args.username, "password": args.password},
     )
     if resp.status_code == 200:
         if args.quiet:
