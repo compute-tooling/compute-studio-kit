@@ -15,4 +15,3 @@ def validate_inputs(meta_param_dict, adjustment, errors_warnings):
 
 def run_model(meta_param_dict, adjustment):
     pass
-

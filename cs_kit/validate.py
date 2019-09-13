@@ -47,7 +47,6 @@ def check_validate_inputs(validate_res):
 
 class CoreTestMeta(type):
     def __new__(cls, clsname, bases, attrs):
-        print(attrs)
         for attr in ["get_version", "get_inputs", "validate_inputs", "run_model"]:
             if attrs.get(attr):
                 attrs[attr] = staticmethod(attrs[attr])

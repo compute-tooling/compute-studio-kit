@@ -20,7 +20,6 @@ def validate_inputs(meta_param_dict, adjustment, errors_warnings):
 
 def run_model(meta_param_dict, adjustment):
     pass
-
 """
 
 testfunctionstemplate = """from cs_kit import CoreTestFunctions
@@ -32,8 +31,8 @@ class TestFunctions1(CoreTestFunctions):
     get_version = functions.get_version
     validate_inputs = functions.validate_inputs
     run_model = functions.run_model
-    ok_adjustment = {} # your valid inputs here
-    bad_adjustment = {} # your invalid
+    ok_adjustment = {}  # your valid inputs here
+    bad_adjustment = {}  # your invalid inputs here
 
 """
 
