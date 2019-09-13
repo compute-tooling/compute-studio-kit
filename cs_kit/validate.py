@@ -3,7 +3,9 @@ from functools import reduce
 import copy
 import itertools
 import json
+import time
 import uuid
+import warnings
 
 import s3like
 
@@ -14,8 +16,14 @@ from .schemas import Parameters, ErrorsWarnings
 
 def load_model_parameters(model_parameters):
     for sect, _defaults in model_parameters.items():
-        params = type(f"Params{sect}", (Parameters,), {"defaults": _defaults})()
-        assert params
+        try:
+            type(f"Params{sect}", (Parameters,), {"defaults": _defaults})()
+        except Exception as ser_exception:
+            raise CSKitError(
+                f"An error was thrown while loading the model parameters for section: '{sect}'."
+                f"\n\n\t Hint: Make sure you are using the 'Parameters.dump' method if you are "
+                f"using ParamTools."
+            ) from ser_exception
 
 
 def check_get_inputs(inputs):
@@ -123,16 +131,25 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
         for mp_name in mp_names:
             mp_grid.append(metaparams.param_grid(mp_name))
 
-        n_combinations = reduce(lambda x, y: len(x) * len(y), mp_grid, [1])
+        n_combinations = reduce(lambda x, y: x * y, map(len, mp_grid), 1)
         mp_grid = itertools.product(*mp_grid)
 
         skip = n_combinations > 9
+        print(f"\nrunning 'get_inputs' with {n_combinations} combinations.")
         for loopcount, tup in enumerate(mp_grid):
-            if skip and not loopcount % 3:
+            if skip and loopcount % 3:
                 continue
+            s = time.time()
             new_inputs = self.get_inputs(
                 {mp_names[i]: tup[i] for i in range(len(metaparams.keys()))}
             )
+            f = time.time()
+            if (f - s) > 1:
+                warnings.warn(
+                    f"Function get_inputs took {f-s} seconds to return. "
+                    f"Compute Studio recommends a return time of less than a second."
+                )
+            print(f"\t get_inputs took {f-s} seconds.")
             load_model_parameters(new_inputs["model_parameters"])
 
     def test_validate_inputs(self):
@@ -147,7 +164,7 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
             array_first = True
             defaults = init_metaparams
 
-        mp_spec = MetaParams().items()
+        mp_spec = MetaParams().specification(serializable=True)
 
         ew_template = {
             major_sect: {"errors": {}, "warnings": {}} for major_sect in init_modparams
@@ -197,10 +214,9 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
         check_get_inputs(inputs)
 
         class MetaParams(Parameters):
-            array_first = True
             defaults = inputs["meta_parameters"]
 
-        mp_spec = MetaParams().items()
+        mp_spec = MetaParams().specification(serializable=True)
 
         result = self.run_model(mp_spec, self.ok_adjustment)
 
