@@ -14,13 +14,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/compute-studio-org/Compute-Studio-Toolkit",
     packages=setuptools.find_packages(),
-    install_requires=["paramtools>=0.7.0", "boto3", "s3like>=1.3.1", "requests"],
+    install_requires=["paramtools", "cs-storage"],
     include_package_data=True,
     entry_points={
-        "console_scripts": [
-            "csk-init=cs_kit.cli:init",
-            "csk-token=cs_kit.cli:cs_token",
-        ]
+        "console_scripts": ["csk-init=cs_kit.cli:init", "csk-token=cs_kit.cli:cs_token"]
     },
     classifiers=[
         "Programming Language :: Python :: 3",
