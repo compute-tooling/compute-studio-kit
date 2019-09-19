@@ -7,7 +7,7 @@ import time
 import uuid
 import warnings
 
-import s3like
+import cs_storage
 
 
 from .exceptions import CSKitError, SerializationError
@@ -220,5 +220,5 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
 
         result = self.run_model(mp_spec, self.ok_adjustment)
 
-        assert s3like.LocalResult().load(result)
-        assert s3like.write_to_s3like(uuid.uuid4(), result, do_upload=False)
+        assert cs_storage.LocalResult().load(result)
+        assert cs_storage.write(uuid.uuid4(), result, do_upload=False)
