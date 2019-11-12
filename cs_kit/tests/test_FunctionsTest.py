@@ -70,13 +70,34 @@ def validate_inputs_returns_custom_adj(meta_param_dict, adjustment, errors_warni
     return {"errors_warnings": errors_warnings, "custom_adjustment": {"my": "params"}}
 
 
-def run_model(meta_param_dict, adjustment):
+def run_model_old_bokeh(meta_param_dict, adjustment):
     return {
         "renderable": [
             {
                 "media_type": "bokeh",
                 "title": "bokeh plot",
                 "data": {"html": "<div/>", "javascript": "console.log('hello world')"},
+            },
+            {"media_type": "table", "title": "table stuff", "data": "<table/>"},
+        ],
+        "downloadable": [
+            {"media_type": "CSV", "title": "CSV file", "data": "comma,sep,values\n"},
+            {"media_type": "PDF", "title": "PDF file", "data": b"pdf data"},
+        ],
+    }
+
+
+def run_model(meta_param_dict, adjustment):
+    return {
+        "renderable": [
+            {
+                "media_type": "bokeh",
+                "title": "bokeh plot",
+                "data": {
+                    "target_id": "abc",
+                    "root_id": "123",
+                    "doc": "console.log('hello world')",
+                },
             },
             {"media_type": "table", "title": "table stuff", "data": "<table/>"},
         ],
@@ -194,3 +215,12 @@ def test_key_errors_on_validate_inputs():
     ft = TestFunctions()
     with pytest.raises(CSKitError):
         ft.test_validate_inputs()
+
+
+def test_old_bokeh_outputs():
+    class TestFunctions(TestFunctions1):
+        run_model = run_model_old_bokeh
+
+    tf = TestFunctions()
+    with pytest.raises(CSKitError):
+        tf.test_run_model()

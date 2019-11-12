@@ -222,3 +222,16 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
 
         assert cs_storage.LocalResult().load(result)
         assert cs_storage.write(uuid.uuid4(), result, do_upload=False)
+
+        for output_type, outputs in result.items():
+            for output in outputs:
+                if output["media_type"] == "bokeh":
+                    data = output["data"]
+                    if not (
+                        isinstance(data, dict)
+                        and data.keys() == {"target_id", "root_id", "doc"}
+                    ):
+                        link = "https://docs.compute.studio/publish/outputs/#bokeh"
+                        raise CSKitError(
+                            f"Bokeh outputs must be created with json_item. Reference: {link}"
+                        )
