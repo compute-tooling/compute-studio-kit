@@ -2,10 +2,12 @@ name: cs-kit-dev
 channels:
   - conda-forge
 dependencies:
+  - python>=3.7,<3.8
   - paramtools
   - pytest
   - requests
   - pip
+  - pandas
   - pre-commit
   - black
   - flake8
