@@ -1,4 +1,5 @@
 from io import StringIO
+from pathlib import Path
 import time
 import os
 
@@ -65,16 +66,17 @@ class ComputeStudio:
         return res
 
     def get_token(self, api_token):
+        token_file_path = Path.home() / ".cs-api-token"
         if api_token:
             return api_token
         elif os.environ.get("CS_API_TOKEN", None) is not None:
             return os.environ["CS_API_TOKEN"]
-        elif os.path.exists("~/.cs-api-token"):
-            with open("~/.cs-api-token", "r") as f:
+        elif token_file_path.exists():
+            with open(token_file_path, "r") as f:
                 return f.read().strip()
         else:
             raise APIException(
-                "API token not found. It can be passed as an argument to "
-                "this class, as an environment variable at CS_API_TOKEN, "
-                "or read from ~/.cs-api-token"
+                f"API token not found. It can be passed as an argument to "
+                f"this class, as an environment variable at CS_API_TOKEN, "
+                f"or read from {token_file_path}"
             )
