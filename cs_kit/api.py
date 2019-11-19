@@ -10,7 +10,7 @@ class APIException(Exception):
     pass
 
 
-class API:
+class ComputeStudio:
     host = "https://compute.studio"
 
     def __init__(self, owner, title, api_token=None):
