@@ -67,14 +67,14 @@ class API:
     def get_token(self, api_token):
         if api_token:
             return api_token
-        elif os.environ.get("COMP_API_TOKEN", None) is not None:
-            return os.environ["COMP_API_TOKEN"]
-        elif os.path.exists("~/.comp-api-token"):
-            with open("~/.comp-api-token", "r") as f:
+        elif os.environ.get("CS_API_TOKEN", None) is not None:
+            return os.environ["CS_API_TOKEN"]
+        elif os.path.exists("~/.cs-api-token"):
+            with open("~/.cs-api-token", "r") as f:
                 return f.read().strip()
         else:
             raise APIException(
                 "API token not found. It can be passed as an argument to "
-                "this class, as an environment variable, or read from "
-                "~/.comp-api-token"
+                "this class, as an environment variable at CS_API_TOKEN, "
+                "or read from ~/.cs-api-token"
             )
