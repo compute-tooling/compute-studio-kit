@@ -6,6 +6,7 @@ dependencies:
   - pytest
   - requests
   - pip
+  - pandas
   - pre-commit
   - black
   - flake8
