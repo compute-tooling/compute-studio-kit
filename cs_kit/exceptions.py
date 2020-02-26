@@ -8,3 +8,7 @@ class CSKitError(CSKitException):
 
 class SerializationError(CSKitException):
     pass
+
+
+class APIException(CSKitException):
+    pass
