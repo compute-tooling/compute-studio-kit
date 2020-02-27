@@ -3,7 +3,7 @@ from .exceptions import CSKitException, CSKitError, SerializationError, APIExcep
 from .schemas import Parameters, ErrorsWarnings
 from .validate import CoreTestFunctions
 
-__version__ = "1.10.0"
+__version__ = "1.11.0"
 
 
 __all__ = [
