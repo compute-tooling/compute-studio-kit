@@ -1,5 +1,5 @@
 from .api import ComputeStudio
-from .exceptions import CSKitError, SerializationError
+from .exceptions import CSKitException, CSKitError, SerializationError, APIException
 from .schemas import Parameters, ErrorsWarnings
 from .validate import CoreTestFunctions
 
@@ -13,4 +13,8 @@ __all__ = [
     ErrorsWarnings,
     CoreTestFunctions,
     ComputeStudio,
+    CSKitException,
+    CSKitError,
+    SerializationError,
+    APIException,
 ]

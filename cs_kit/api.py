@@ -6,9 +6,7 @@ import os
 import requests
 import pandas as pd
 
-
-class APIException(Exception):
-    pass
+from cs_kit.exceptions import APIException
 
 
 class ComputeStudio:
@@ -32,21 +30,31 @@ class ComputeStudio:
         )
         if resp.status_code == 201:
             data = resp.json()
-            pollresp = requests.get(f"{self.inputs_url}{data['hashid']}/")
+            pollresp = requests.get(
+                f"{self.sim_url}{data['sim']['model_pk']}/edit/",
+                headers=self.auth_header,
+            )
             polldata = pollresp.json()
             while pollresp.status_code == 200 and polldata["status"] == "PENDING":
                 time.sleep(3)
-                pollresp = requests.get(f"{self.inputs_url}{data['hashid']}/")
+                pollresp = requests.get(
+                    f"{self.sim_url}{data['sim']['model_pk']}/edit/",
+                    headers=self.auth_header,
+                )
                 polldata = pollresp.json()
             if pollresp.status_code == 200 and polldata["status"] == "SUCCESS":
-                return polldata
+                simresp = requests.get(
+                    f"{self.sim_url}{data['sim']['model_pk']}/remote/",
+                    headers=self.auth_header,
+                )
+                return simresp.json()
             else:
                 raise APIException(pollresp.text)
         raise APIException(resp.text)
 
     def detail(self, model_pk):
         while True:
-            resp = requests.get(f"{self.sim_url}{model_pk}/")
+            resp = requests.get(f"{self.sim_url}{model_pk}/", headers=self.auth_header)
             if resp.status_code == 202:
                 pass
             elif resp.status_code == 200:
@@ -80,3 +88,37 @@ class ComputeStudio:
                 f"this class, as an environment variable at CS_API_TOKEN, "
                 f"or read from {token_file_path}"
             )
+
+    def update_sim(self, model_pk, **sim_kwargs):
+        """
+        Update meta data about a simulation. For now, you can set:
+        - title: title of the simulation.
+        - is_public: visibility of the simulation.
+        - notify_on_completion: set to True if you'd like an email when
+          the simulation completes.
+
+        Ex:
+
+        cs.update_sim(
+            model_pk=123,
+            title="hello world",
+            is_public=True,
+            notify_on_completion=True
+        )
+        """
+        extra_kwargs = sim_kwargs.keys() - {
+            "title",
+            "is_public",
+            "notify_on_completion",
+        }
+        if extra_kwargs:
+            raise APIException(
+                f"Extra arguments were given to update_sim: {extra_kwargs}"
+            )
+        resp = requests.put(
+            f"{self.sim_url}{model_pk}/", json=sim_kwargs, headers=self.auth_header,
+        )
+        if resp.status_code == 200:
+            return resp.json()
+        else:
+            raise APIException(resp.text)

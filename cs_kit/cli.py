@@ -95,10 +95,15 @@ def cs_token():
     parser.add_argument(
         "--quiet", "-q", help="Just print token", required=False, action="store_true"
     )
+    parser.add_argument(
+        "--host",
+        help="Use another Compute Studio host besides https://compute.studio",
+        default="https://compute.studio",
+    )
     args = parser.parse_args()
 
     resp = requests.post(
-        "https://compute.studio/api-token-auth/",
+        f"{args.host}/api-token-auth/",
         json={"username": args.username, "password": args.password},
     )
     if resp.status_code == 200:
