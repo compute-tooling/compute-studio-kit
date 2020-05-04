@@ -63,10 +63,15 @@ class TestFunctions1(CoreTestFunctions):
     get_inputs = functions.get_inputs
     validate_inputs = functions.validate_inputs
     run_model = functions.run_model
+    # ok_meta_param_dict is optional.
+    ok_meta_param_dict = {"full_data": False}
     ok_adjustment={"matchup": {"pitcher": [{"value": "Max Scherzer"}]}}
     bad_adjustment={"matchup": {"pitcher": [{"value": "Not a pitcher"}]}}
 
 ```
+
+- If `ok_meta_param_dict` is set, then it will be used in the `run_model` test
+  along with `ok_adjustment`.
 
 ## Run your cs-config tests
 
