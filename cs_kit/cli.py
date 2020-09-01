@@ -65,7 +65,7 @@ def write_template(path, template):
             f.write(template)
 
 
-def init():
+def init(args: argparse.Namespace = None):
     cstoplevel = Path.cwd() / "cs-config"
     cstoplevel.mkdir(exist_ok=True)
     write_template(cstoplevel / "setup.py", setuptemplate)
@@ -86,10 +86,26 @@ def init():
     write_template(test / "test_functions.py", testfunctionstemplate)
 
 
-def cs_token():
-    parser = argparse.ArgumentParser(
-        description="Helper for getting Compute Studio credentials."
+def get_token(host, username, password, quiet=False):
+    resp = requests.post(
+        f"{host}/api-token-auth/", json={"username": username, "password": password},
     )
+    if resp.status_code == 200:
+        if quiet:
+            print(resp.json()["token"])
+        else:
+            print("Token: ", resp.json()["token"])
+    else:
+        print("Authentication failed.")
+
+
+def cs_token(subparsers: argparse._SubParsersAction = None):
+    description = "Helper for getting Compute Studio credentials."
+    if subparsers is None:
+        # support for legacy csk-token command.
+        parser = argparse.ArgumentParser(description=description)
+    else:
+        parser = subparsers.add_parser("token", description=description)
     parser.add_argument("--username", help="Compute Studio username", required=True)
     parser.add_argument("--password", help="Compute Studio password", required=True)
     parser.add_argument(
@@ -100,16 +116,27 @@ def cs_token():
         help="Use another Compute Studio host besides https://compute.studio",
         default="https://compute.studio",
     )
-    args = parser.parse_args()
-
-    resp = requests.post(
-        f"{args.host}/api-token-auth/",
-        json={"username": args.username, "password": args.password},
-    )
-    if resp.status_code == 200:
-        if args.quiet:
-            print(resp.json()["token"])
-        else:
-            print("Token: ", resp.json()["token"])
+    if subparsers is None:
+        args = parser.parse_args()
+        get_token(args.host, args.username, args.password, args.quiet)
     else:
-        print("Authentication failed.")
+        parser.set_defaults(
+            func=lambda args: get_token(
+                args.host, args.username, args.password, args.quiet
+            )
+        )
+
+
+def cli():
+    parser = argparse.ArgumentParser(description="C/S CLI")
+    subparsers = parser.add_subparsers()
+
+    cs_token(subparsers)
+
+    init_parser = subparsers.add_parser(
+        "init", description="Initialize cs-config package."
+    )
+    init_parser.set_defaults(func=init)
+
+    args = parser.parse_args()
+    args.func(args)

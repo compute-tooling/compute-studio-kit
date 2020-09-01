@@ -17,7 +17,11 @@ setuptools.setup(
     install_requires=["paramtools", "cs-storage", "pandas"],
     include_package_data=True,
     entry_points={
-        "console_scripts": ["csk-init=cs_kit.cli:init", "csk-token=cs_kit.cli:cs_token"]
+        "console_scripts": [
+            "csk-init=cs_kit.cli:init",
+            "csk-token=cs_kit.cli:cs_token",
+            "csk=cs_kit.cli:cli",
+        ]
     },
     classifiers=[
         "Programming Language :: Python :: 3",
