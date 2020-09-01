@@ -22,7 +22,7 @@ def load_model_parameters(model_parameters):
             raise CSKitError(
                 f"An error was thrown while loading the model parameters for section: '{sect}'."
                 f"\n\n\t Hint: Make sure you are using the 'Parameters.dump' method if you are "
-                f"using ParamTools."
+                f"using ParamTools.\n\n{str(ser_exception)}"
             ) from ser_exception
 
 
