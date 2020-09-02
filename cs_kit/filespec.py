@@ -17,6 +17,7 @@ class CSFileSystem(AbstractFileSystem):
     - cs://owner:title@model-pk/inputs : get inputs metadata for simulation
     - cs://owner:title@model-pk/inputs/adjustment : get full adjustment
     - cs://owner:title@model-pk/input/adjustment/section : get specific section of adjustment
+    - cs://owner:title@model-pk/input/meta_parameters : get meta_parameters
     - cs://owner:title@model-pk/outputs : get outputs from reform
     - cs://owner:title@model-pk/owner : get owner of simulation
     - cs://owner:title@model-pk/title : get title of simulation
