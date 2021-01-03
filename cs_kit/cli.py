@@ -68,22 +68,23 @@ def write_template(path, template):
 def init(args: argparse.Namespace = None):
     cstoplevel = Path.cwd() / "cs-config"
     cstoplevel.mkdir(exist_ok=True)
-    write_template(cstoplevel / "setup.py", setuptemplate)
     write_template(cstoplevel / "install.sh", installtemplate)
 
-    cs = cstoplevel / "cs_config"
-    cs.mkdir(exist_ok=True)
+    if args.app_type == "model":
+        write_template(cstoplevel / "setup.py", setuptemplate)
+        cs = cstoplevel / "cs_config"
+        cs.mkdir(exist_ok=True)
 
-    (cs / "__init__.py").touch()
+        (cs / "__init__.py").touch()
 
-    write_template(cs / "functions.py", functionstemplate)
+        test = cs / "tests"
+        test.mkdir(exist_ok=True)
 
-    test = cs / "tests"
-    test.mkdir(exist_ok=True)
+        (test / "__init__.py").touch()
 
-    (test / "__init__.py").touch()
+        write_template(cs / "functions.py", functionstemplate)
 
-    write_template(test / "test_functions.py", testfunctionstemplate)
+        write_template(test / "test_functions.py", testfunctionstemplate)
 
 
 def get_token(host, username, password, quiet=False):
@@ -136,6 +137,7 @@ def cli():
     init_parser = subparsers.add_parser(
         "init", description="Initialize cs-config package."
     )
+    init_parser.add_argument("--app-type", default="model", required=False)
     init_parser.set_defaults(func=init)
 
     args = parser.parse_args()
