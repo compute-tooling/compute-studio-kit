@@ -63,6 +63,18 @@ class ComputeStudio:
                 raise APIException(resp.text)
             time.sleep(5)
 
+    def inputs(self, model_pk=None):
+        if model_pk is None:
+            resp = requests.get(f"{self.sim_url}inputs/", headers=self.auth_header)
+            resp.raise_for_status()
+            return resp.json()
+        else:
+            resp = requests.get(
+                f"{self.sim_url}{model_pk}/edit/", headers=self.auth_header
+            )
+            resp.raise_for_status()
+            return resp.json()
+
     def results(self, model_pk):
         result = self.detail(model_pk)
         res = {}
@@ -116,7 +128,9 @@ class ComputeStudio:
                 f"Extra arguments were given to update_sim: {extra_kwargs}"
             )
         resp = requests.put(
-            f"{self.sim_url}{model_pk}/", json=sim_kwargs, headers=self.auth_header,
+            f"{self.sim_url}{model_pk}/",
+            json=sim_kwargs,
+            headers=self.auth_header,
         )
         if resp.status_code == 200:
             return resp.json()
