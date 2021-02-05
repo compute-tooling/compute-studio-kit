@@ -1,8 +1,8 @@
 # Compute Studio Kit
 
-`cs-kit` tests your model's functions against the [Compute Studio criteria](https://docs.compute.studio/publish/functions/). If your functions pass the `cs-kit` tests, then you can be reasonably sure that the functions will work on compute.studio.
+`cs-kit` tests your model's functions against the [Compute Studio criteria](https://docs.compute.studio/publish/guide.html). If your functions pass the `cs-kit` tests, then you can be reasonably sure that the functions will work on compute.studio.
 
-Compute Studio Kit also provides a helper command for retrieving your [Compute Studio API](https://docs.compute.studio/api/guide/) token.
+Compute Studio Kit also provides a helper command for retrieving your [Compute Studio API](https://docs.compute.studio/api/guide.html) token.
 
 ## Install `cs-kit`
 
@@ -80,7 +80,7 @@ py.test cs-config
 conda install your-project
 ```
 
-## Get your [Compute Studio API](https://docs.compute.studio/api/guide/) token
+## Get your [Compute Studio API](https://docs.compute.studio/api/guide.html) token
 
 ```bash
 $ csk-token --username myuser --password mypass
