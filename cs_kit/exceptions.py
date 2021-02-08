@@ -1,5 +1,9 @@
+import json
+
+
 class CSKitException(Exception):
-    pass
+    def __init__(self, msg):
+        super().__init__(json.dumps(msg, indent=4))
 
 
 class CSKitError(CSKitException):
