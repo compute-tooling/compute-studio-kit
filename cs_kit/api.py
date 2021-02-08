@@ -24,8 +24,8 @@ class ComputeStudio:
         client = ComputeStudio("PSLmodels", "TaxBrain")
         client.create()
 
-    Learn how to get your API token from the Authentication
-    `docs <https://docs.compute.studio/api/auth.html>`_. Once you have your token,
+    Learn how to get your API token from the
+    `Authentication docs <https://docs.compute.studio/api/auth.html>`_. Once you have your token,
     you can save it in a file named ``.cs_api_token`` in the home directory of your
     computer. You can also set it as an environment variable or pass it directly
     to the ``ComputeStudio`` class.
@@ -48,14 +48,14 @@ class ComputeStudio:
         Parameters
         ----------
         adjustment : dict
-            Parameter values in the paramtools `format <https://paramtools.dev/api/reference.html>`_.
+            Parameter values in the `ParamTools format <https://paramtools.dev/api/reference.html>`_.
 
         meta_parameters: dict
-            Meta parameters for the simulation in a key:value format.
+            Meta parameters for the simulation in a ``key:value`` format.
 
         Returns
         --------
-        resp: dict
+        response: dict
             Response from the Compute Studio server. Use this to get the simulation ID and status.
         """
         adjustment = adjustment or {}
@@ -86,10 +86,17 @@ class ComputeStudio:
                 )
                 return simresp.json()
             else:
-                raise APIException(pollresp.text)
-        raise APIException(resp.text)
+                raise APIException(pollresp.json())
+        raise APIException(resp.json())
 
-    def detail(self, model_pk: int, wait=True, polling_interval=5, timeout=600):
+    def detail(
+        self,
+        model_pk: int,
+        include_outputs: bool = False,
+        wait: bool = True,
+        polling_interval: int = 5,
+        timeout: int = 600,
+    ):
         """
         Get detail for a simulation.
 
@@ -97,6 +104,9 @@ class ComputeStudio:
         ----------
         model_pk : int
             ID for the simulation.
+
+        include_outputs: bool
+            Include outputs from the simulation in addition to the simulation metadata.
 
         wait: bool
             Meta parameters for the simulation in a key:value format.
@@ -109,16 +119,22 @@ class ComputeStudio:
 
         Returns
         --------
-        resp: dict
+        response: dict
             Response from the Compute Studio server.
 
         """
+        if include_outputs:
+            url = f"{self.sim_url}{model_pk}/"
+        else:
+            url = f"{self.sim_url}{model_pk}/remote/"
+
         start = time.time()
-        while wait:
+        while True:
             if (time.time() - start) > timeout:
                 raise TimeoutError(f"Simulation not ready in under {timeout} seconds.")
 
-            resp = requests.get(f"{self.sim_url}{model_pk}/", headers=self.auth_header)
+            resp = requests.get(url, headers=self.auth_header)
+
             if resp.status_code == 202 and wait:
                 continue  # waiting on the simulation to finish.
             elif resp.status_code == 202 and not wait:
@@ -126,7 +142,7 @@ class ComputeStudio:
             elif resp.status_code == 200:
                 return resp.json()
             else:
-                raise APIException(resp.text)
+                raise APIException(resp.json())
 
             time.sleep(polling_interval)
 
@@ -137,11 +153,11 @@ class ComputeStudio:
         Parameters
         -----------
         model_pk: int
-            Id for the simulation.
+            ID for the simulation.
 
         Returns
         -------
-        resp: dict
+        response: dict
             Response from the Compute Studio server.
 
         """
@@ -156,7 +172,7 @@ class ComputeStudio:
             resp.raise_for_status()
             return resp.json()
 
-    def results(self, model_pk):
+    def results(self, model_pk: int, timeout: int = 600):
         """
         Retrieve and parse results into the appropriate data structure. Currently,
         CSV outputs are loaded into a pandas `DataFrame`. Other outputs are returned
@@ -165,15 +181,17 @@ class ComputeStudio:
         Parameters
         ----------
         model_pk: int
-            Id for the simulation.
+            ID for the simulation.
 
+        timeout: int
+            Time in seconds to wait for the simulation to finish.
 
         Returns
         -------
         result: dict
             Dictionary of simulation outputs formated as title:output.
         """
-        result = self.detail(model_pk)
+        result = self.detail(model_pk, include_outputs=True, wait=True, timeout=timeout)
         res = {}
         for output in result["outputs"]["downloadable"]:
             if output["media_type"] == "CSV":
@@ -184,7 +202,7 @@ class ComputeStudio:
 
     def update(
         self,
-        model_pk,
+        model_pk: int,
         title: Optional[str] = None,
         is_public: Optional[bool] = None,
         notify_on_completion: Optional[bool] = None,
@@ -203,6 +221,8 @@ class ComputeStudio:
 
         Parameters
         ----------
+        model_pk: int
+            ID for the simulation.
 
         title: str
             Title of the simulation.
@@ -216,7 +236,7 @@ class ComputeStudio:
 
         Returns
         -------
-        resp: dict
+        response: dict
             Response from the Compute Studio server.
 
         """
@@ -236,7 +256,7 @@ class ComputeStudio:
         if resp.status_code == 200:
             return resp.json()
         else:
-            raise APIException(resp.text)
+            raise APIException(resp.json())
 
     def get_token(self, api_token):
         """Retrieve the API token"""
