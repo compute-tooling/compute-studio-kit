@@ -3,6 +3,8 @@ import argparse
 
 import requests
 
+from cs_kit import buildpacks
+
 functionstemplate = """# Write or import your Compute Studio functions here.
 
 
@@ -128,11 +130,20 @@ def cs_token(subparsers: argparse._SubParsersAction = None):
         )
 
 
+def build_env(subparsers: argparse._SubParsersAction):
+    parser = subparsers.add_parser(
+        "build-env",
+        description="Build packages for Compute Studio app using available configuration files.",
+    )
+    parser.set_defaults(func=lambda args: buildpacks.build_env())
+
+
 def cli():
     parser = argparse.ArgumentParser(description="C/S CLI")
     subparsers = parser.add_subparsers()
 
     cs_token(subparsers)
+    build_env(subparsers)
 
     init_parser = subparsers.add_parser(
         "init", description="Initialize cs-config package."
