@@ -1,0 +1,16 @@
+name: cs-kit-dev
+channels:
+  - conda-forge
+dependencies:
+  - paramtools
+  - pytest
+  - requests
+  - pip
+  - pandas
+  - pre-commit
+  - black
+  - flake8
+  - fsspec
+  - pip:
+      - cs-storage
+      - "-e ."
