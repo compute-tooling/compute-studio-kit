@@ -25,6 +25,9 @@ class PythonBuildpack:
                 if isinstance(dep, dict) and dep.get("pip"):
                     pip_requirements = dep["pip"]
                 else:
+                    if ">" in dep or "<" in dep:
+                        dep = dep.replace('"', "")
+                        dep = f'"{dep}"'
                     conda_requirements.append(dep)
 
         if Path(self.requirements_txt_path).exists():
@@ -69,4 +72,3 @@ def run(cmd):
     f = time.time()
     print(f"\n\tFinished in {f-s} seconds.\n")
     return res
-
