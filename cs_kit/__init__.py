@@ -4,7 +4,7 @@ from .schemas import Parameters, ErrorsWarnings
 from .validate import CoreTestFunctions
 from .filespec import CSFileSystem
 
-__version__ = "1.16.1"
+__version__ = "1.16.2"
 
 
 __all__ = [
