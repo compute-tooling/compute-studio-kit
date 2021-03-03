@@ -16,6 +16,7 @@ class PythonBuildpack:
     def get_requirements(self):
         pip_requirements = []
         conda_requirements = []
+        conda_channels = []
         if Path(self.environment_yml_path).exists():
             with open(self.environment_yml_path) as f:
                 env = yaml.safe_load(f.read())
@@ -30,6 +31,10 @@ class PythonBuildpack:
                         dep = f'"{dep}"'
                     conda_requirements.append(dep)
 
+            channels = env.get("channels", [])
+            for channel in channels:
+                conda_channels.append(channel)
+
         if Path(self.requirements_txt_path).exists():
             with open(self.requirements_txt_path, "r") as f:
                 pip_requirements = f.read().split("\n")
@@ -37,12 +42,17 @@ class PythonBuildpack:
         return {
             "pip_requirements": pip_requirements,
             "conda_requirements": conda_requirements,
+            "conda_channels": conda_channels,
         }
 
     def build(self):
         reqs = self.get_requirements()
         if reqs["conda_requirements"]:
-            run(f"conda install -y {' '.join(reqs['conda_requirements'])}")
+            conda_reqs_str = " ".join(reqs["conda_requirements"])
+            conda_channels_str = " ".join(
+                [f"-c {channel}" for channel in reqs["conda_channels"]]
+            )
+            run(f"conda install {conda_channels_str} -y {conda_reqs_str}")
         if reqs["pip_requirements"]:
             pip_requirements = []
             local_install = False
