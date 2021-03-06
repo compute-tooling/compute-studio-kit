@@ -1,5 +1,6 @@
 from pathlib import Path
 import argparse
+from getpass import getpass
 
 import requests
 
@@ -110,7 +111,6 @@ def cs_token(subparsers: argparse._SubParsersAction = None):
     else:
         parser = subparsers.add_parser("token", description=description)
     parser.add_argument("--username", help="Compute Studio username", required=True)
-    parser.add_argument("--password", help="Compute Studio password", required=True)
     parser.add_argument(
         "--quiet", "-q", help="Just print token", required=False, action="store_true"
     )
@@ -119,14 +119,13 @@ def cs_token(subparsers: argparse._SubParsersAction = None):
         help="Use another Compute Studio host besides https://compute.studio",
         default="https://compute.studio",
     )
+    password = getpass()
     if subparsers is None:
         args = parser.parse_args()
-        get_token(args.host, args.username, args.password, args.quiet)
+        get_token(args.host, args.username, password, args.quiet)
     else:
         parser.set_defaults(
-            func=lambda args: get_token(
-                args.host, args.username, args.password, args.quiet
-            )
+            func=lambda args: get_token(args.host, args.username, password, args.quiet)
         )
 
 
