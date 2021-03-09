@@ -1,10 +1,13 @@
+import asyncio
+from functools import wraps
 from io import StringIO
+import json
 from pathlib import Path
 import time
 from typing import Optional
 import os
 
-import requests
+import httpx
 import pandas as pd
 
 from cs_kit.exceptions import APIException
@@ -33,15 +36,56 @@ class ComputeStudio:
 
     host = "https://compute.studio"
 
-    def __init__(self, owner: str, title: str, api_token: Optional[str] = None):
+    def __init__(
+        self,
+        owner: str,
+        title: str,
+        api_token: Optional[str] = None,
+        asynchronous: Optional[bool] = False,
+    ):
         self.owner = owner
         self.title = title
+        self.asynchronous = asynchronous
         api_token = self.get_token(api_token)
         self.auth_header = {"Authorization": f"Token {api_token}"}
         self.sim_url = f"{self.host}/{owner}/{title}/api/v1/"
         self.inputs_url = f"{self.host}/{owner}/{title}/api/v1/inputs/"
 
-    def create(self, adjustment: dict = None, meta_parameters: dict = None):
+    async def get_inputs_status(self, model_pk):
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.sim_url}{model_pk}/edit/", headers=self.auth_header,
+            )
+        if response.status_code in (200, 400):
+            data = response.json()
+            return data["status"], data
+
+        response.raise_for_status()
+
+    async def poll_is_valid(self, model_pk):
+        inputs_status, data = await self.get_inputs_status(model_pk)
+        while inputs_status == "PENDING":
+            time.sleep(3)
+            inputs_status, data = await self.get_inputs_status(model_pk)
+        if inputs_status == "SUCCESS":
+            async with httpx.AsyncClient() as client:
+                simresp = await client.get(
+                    f"{self.sim_url}{model_pk}/remote/", headers=self.auth_header,
+                )
+                return simresp.json()
+        else:
+            errors = data.get("errors_warnings")
+            traceback = data.get("traceback")
+            raise APIException(
+                errors or traceback or data, owner=self.owner, title=self.title
+            )
+
+    async def create(
+        self,
+        adjustment: dict = None,
+        meta_parameters: dict = None,
+        check_is_valid: bool = True,
+    ):
         """
         Create a simulation on Compute Studio.
 
@@ -53,6 +97,9 @@ class ComputeStudio:
         meta_parameters: dict
             Meta parameters for the simulation in a ``key:value`` format.
 
+        check_is_valid: bool
+            Check if inputs are valid before returning.
+
         Returns
         --------
         response: dict
@@ -60,36 +107,24 @@ class ComputeStudio:
         """
         adjustment = adjustment or {}
         meta_parameters = meta_parameters or {}
-        resp = requests.post(
-            self.sim_url,
-            json={"adjustment": adjustment, "meta_parameters": meta_parameters},
-            headers=self.auth_header,
-        )
-        if resp.status_code == 201:
-            data = resp.json()
-            pollresp = requests.get(
-                f"{self.sim_url}{data['sim']['model_pk']}/edit/",
+
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                self.sim_url,
+                json={"adjustment": adjustment, "meta_parameters": meta_parameters},
                 headers=self.auth_header,
             )
-            polldata = pollresp.json()
-            while pollresp.status_code == 200 and polldata["status"] == "PENDING":
-                time.sleep(3)
-                pollresp = requests.get(
-                    f"{self.sim_url}{data['sim']['model_pk']}/edit/",
-                    headers=self.auth_header,
-                )
-                polldata = pollresp.json()
-            if pollresp.status_code == 200 and polldata["status"] == "SUCCESS":
-                simresp = requests.get(
-                    f"{self.sim_url}{data['sim']['model_pk']}/remote/",
-                    headers=self.auth_header,
-                )
-                return simresp.json()
+        if resp.status_code == 201:
+            data = resp.json()
+            model_pk = data["sim"]["model_pk"]
+            if check_is_valid:
+                return await self.poll_is_valid(model_pk)
             else:
-                raise APIException(pollresp.json())
+                return await self.detail(model_pk, include_outputs=False, wait=False)
+
         raise APIException(resp.json())
 
-    def detail(
+    async def detail(
         self,
         model_pk: int,
         include_outputs: bool = False,
@@ -133,7 +168,8 @@ class ComputeStudio:
             if (time.time() - start) > timeout:
                 raise TimeoutError(f"Simulation not ready in under {timeout} seconds.")
 
-            resp = requests.get(url, headers=self.auth_header)
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(url, headers=self.auth_header)
 
             if resp.status_code == 202 and wait:
                 continue  # waiting on the simulation to finish.
@@ -146,7 +182,7 @@ class ComputeStudio:
 
             time.sleep(polling_interval)
 
-    def inputs(self, model_pk: Optional[int] = None):
+    async def inputs(self, model_pk: Optional[int] = None):
         """
         Get the inputs for a simulation or retrieve the inputs documentation for the app.
 
@@ -162,17 +198,21 @@ class ComputeStudio:
 
         """
         if model_pk is None:
-            resp = requests.get(f"{self.sim_url}inputs/", headers=self.auth_header)
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    f"{self.sim_url}inputs/", headers=self.auth_header
+                )
             resp.raise_for_status()
             return resp.json()
         else:
-            resp = requests.get(
-                f"{self.sim_url}{model_pk}/edit/", headers=self.auth_header
-            )
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    f"{self.sim_url}{model_pk}/edit/", headers=self.auth_header
+                )
             resp.raise_for_status()
             return resp.json()
 
-    def results(self, model_pk: int, timeout: int = 600):
+    async def results(self, model_pk: int, timeout: int = 600):
         """
         Retrieve and parse results into the appropriate data structure. Currently,
         CSV outputs are loaded into a pandas `DataFrame`. Other outputs are returned
@@ -191,7 +231,9 @@ class ComputeStudio:
         result: dict
             Dictionary of simulation outputs formated as title:output.
         """
-        result = self.detail(model_pk, include_outputs=True, wait=True, timeout=timeout)
+        result = await self.detail(
+            model_pk, include_outputs=True, wait=True, timeout=timeout,
+        )
         res = {}
         for output in result["outputs"]["downloadable"]:
             if output["media_type"] == "CSV":
@@ -250,7 +292,7 @@ class ComputeStudio:
             if val is not None:
                 sim_kwargs[name] = val
 
-        resp = requests.put(
+        resp = httpx.put(
             f"{self.sim_url}{model_pk}/", json=sim_kwargs, headers=self.auth_header,
         )
         if resp.status_code == 200:
@@ -274,4 +316,3 @@ class ComputeStudio:
                 f"this class, as an environment variable at CS_API_TOKEN, "
                 f"or read from {token_file_path}"
             )
-
