@@ -41,13 +41,14 @@ class ComputeStudio:
         owner: str,
         title: str,
         api_token: Optional[str] = None,
+        token_type: Optiona[str] = "Token",
         asynchronous: Optional[bool] = False,
     ):
         self.owner = owner
         self.title = title
         self.asynchronous = asynchronous
         api_token = self.get_token(api_token)
-        self.auth_header = {"Authorization": f"Token {api_token}"}
+        self.auth_header = {"Authorization": f"{token_type} {api_token}"}
         self.sim_url = f"{self.host}/{owner}/{title}/api/v1/"
         self.inputs_url = f"{self.host}/{owner}/{title}/api/v1/inputs/"
 
