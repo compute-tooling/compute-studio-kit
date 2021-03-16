@@ -41,7 +41,7 @@ class ComputeStudio:
         owner: str,
         title: str,
         api_token: Optional[str] = None,
-        token_type: Optiona[str] = "Token",
+        token_type: Optional[str] = "Token",
         asynchronous: Optional[bool] = False,
     ):
         self.owner = owner
