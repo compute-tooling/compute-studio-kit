@@ -90,9 +90,12 @@ def init(args: argparse.Namespace = None):
         write_template(test / "test_functions.py", testfunctionstemplate)
 
 
-def get_token(host, username, password, quiet=False):
+def get_token(host, username, password=None, quiet=False):
+    if password is None:
+        password = getpass()
     resp = requests.post(
-        f"{host}/api-token-auth/", json={"username": username, "password": password},
+        f"{host}/api-token-auth/",
+        json={"username": username, "password": password},
     )
     if resp.status_code == 200:
         if quiet:
@@ -119,13 +122,12 @@ def cs_token(subparsers: argparse._SubParsersAction = None):
         help="Use another Compute Studio host besides https://compute.studio",
         default="https://compute.studio",
     )
-    password = getpass()
     if subparsers is None:
         args = parser.parse_args()
-        get_token(args.host, args.username, password, args.quiet)
+        get_token(args.host, args.username, args.quiet)
     else:
         parser.set_defaults(
-            func=lambda args: get_token(args.host, args.username, password, args.quiet)
+            func=lambda args: get_token(args.host, args.username, args.quiet)
         )
 
 
