@@ -3,9 +3,14 @@ from pathlib import Path
 import time
 from typing import Optional
 import os
+import warnings
 
 import requests
-import pandas as pd
+
+try:
+    import pandas as pd
+except ImportError as ie:
+    pd = None
 
 from cs_kit.exceptions import APIException
 
@@ -194,7 +199,10 @@ class ComputeStudio:
         result = self.detail(model_pk, include_outputs=True, wait=True, timeout=timeout)
         res = {}
         for output in result["outputs"]["downloadable"]:
-            if output["media_type"] == "CSV":
+            if output["media_type"] == "CSV" and pd is not None:
+                warnings.warn(
+                    "Install pandas to return CSV output as a pandas DataFrame."
+                )
                 res[output["title"]] = pd.read_csv(StringIO(output["data"]))
             else:
                 res[output["title"]] = output["data"]
@@ -251,7 +259,9 @@ class ComputeStudio:
                 sim_kwargs[name] = val
 
         resp = requests.put(
-            f"{self.sim_url}{model_pk}/", json=sim_kwargs, headers=self.auth_header,
+            f"{self.sim_url}{model_pk}/",
+            json=sim_kwargs,
+            headers=self.auth_header,
         )
         if resp.status_code == 200:
             return resp.json()
@@ -274,4 +284,3 @@ class ComputeStudio:
                 f"this class, as an environment variable at CS_API_TOKEN, "
                 f"or read from {token_file_path}"
             )
-
