@@ -3,7 +3,7 @@ from pathlib import Path
 import time
 from typing import Optional
 import os
-from warnings import warnings
+import warnings
 
 import requests
 
