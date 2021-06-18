@@ -62,7 +62,7 @@ class PythonBuildpack:
                 else:
                     pip_requirements.append(req)
 
-            run(f"pip install {' '.join(pip_requirements)}")
+            run(f"pip install --user {' '.join(pip_requirements)}")
             if local_install:
                 run("pip install -e .")
 

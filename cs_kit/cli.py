@@ -124,10 +124,10 @@ def cs_token(subparsers: argparse._SubParsersAction = None):
     )
     if subparsers is None:
         args = parser.parse_args()
-        get_token(args.host, args.username, args.quiet)
+        get_token(args.host, args.username, password=None, quiet=args.quiet)
     else:
         parser.set_defaults(
-            func=lambda args: get_token(args.host, args.username, args.quiet)
+            func=lambda args: get_token(args.host, args.username, password=None, quiet=args.quiet)
         )
 
 
