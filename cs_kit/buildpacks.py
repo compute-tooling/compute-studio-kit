@@ -24,7 +24,7 @@ class PythonBuildpack:
             dependencies = env["dependencies"]
             for dep in dependencies:
                 if isinstance(dep, dict) and dep.get("pip"):
-                    pip_requirements = dep["pip"]
+                    pip_requirements += dep["pip"]
                 else:
                     if ">" in dep or "<" in dep:
                         dep = dep.replace('"', "")
@@ -37,7 +37,7 @@ class PythonBuildpack:
 
         if Path(self.requirements_txt_path).exists():
             with open(self.requirements_txt_path, "r") as f:
-                pip_requirements = f.read().split("\n")
+                pip_requirements += f.read().split("\n")
 
         return {
             "pip_requirements": pip_requirements,
@@ -59,7 +59,9 @@ class PythonBuildpack:
             for req in reqs["pip_requirements"]:
                 if req == "-e .":
                     local_install = True
-                else:
+                # Clear duplicates in case a requirements.txt and environment.yaml
+                # are used.
+                elif req not in pip_requirements:
                     pip_requirements.append(req)
 
             run(f"pip install {' '.join(pip_requirements)}")
