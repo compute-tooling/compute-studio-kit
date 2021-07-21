@@ -33,7 +33,7 @@ def test_buildpacks(monkeypatch):
         requirements_txt_path=Path(current_dir / "mock_requirements.txt"),
     ).build()
     assert cmds == [
-        "pip install cs-kit",
+        "pip install cs-kit numerize",
     ]
 
     cmds[:] = []
@@ -43,4 +43,15 @@ def test_buildpacks(monkeypatch):
     assert cmds == [
         'conda install -c PSLmodels -c conda-forge -y "python>=3.6.5" "taxcalc>=3.0.0" "behresp>=0.9.0" "pandas>=0.23" "numpy>=1.13" "paramtools>=0.10.1" pytest "bokeh<2.0.0" coverage pip',
         "pip install cs-kit",
+    ]
+
+    cmds[:] = []
+    buildpacks.PythonBuildpack(
+        environment_yml_path=Path(current_dir / "mock_environment.yml"),
+        requirements_txt_path=Path(current_dir / "mock_requirements.txt"),
+    ).build()
+    assert cmds == [
+        "conda install -c conda-forge -y paramtools pytest requests pip pandas pre-commit black flake8 fsspec",
+        "pip install cs-storage cs-kit numerize",
+        "pip install -e .",
     ]
