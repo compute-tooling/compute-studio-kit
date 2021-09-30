@@ -97,6 +97,7 @@ def run_model(meta_param_dict, adjustment):
                     "target_id": "abc",
                     "root_id": "123",
                     "doc": "console.log('hello world')",
+                    "version": "abc123",
                 },
             },
             {"media_type": "table", "title": "table stuff", "data": "<table/>"},

@@ -223,13 +223,14 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
         assert cs_storage.LocalResult().load(result)
         assert cs_storage.write(uuid.uuid4(), result, do_upload=False)
 
+        required_bokeh_keys = ("target_id", "root_id", "doc")
         for output_type, outputs in result.items():
             for output in outputs:
                 if output["media_type"] == "bokeh":
                     data = output["data"]
                     if not (
                         isinstance(data, dict)
-                        and data.keys() == {"target_id", "root_id", "doc"}
+                        and all([key in data.keys() for key in required_bokeh_keys])
                     ):
                         link = "https://docs.compute.studio/publish/outputs/#bokeh"
                         raise CSKitError(
