@@ -216,7 +216,10 @@ class CoreTestFunctions(metaclass=CoreTestMeta):
         class MetaParams(Parameters):
             defaults = inputs["meta_parameters"]
 
-        mp_spec = MetaParams().specification(serializable=True)
+        if getattr(self, "ok_meta_param_dict", None) is not None:
+            mp_spec = MetaParams().adjust(self.ok_meta_param_dict)
+        else:
+            mp_spec = MetaParams().specification(serializable=True)
 
         result = self.run_model(mp_spec, self.ok_adjustment)
 

@@ -225,3 +225,16 @@ def test_old_bokeh_outputs():
     tf = TestFunctions()
     with pytest.raises(CSKitError):
         tf.test_run_model()
+
+
+def test_specify_meta_param_dict():
+    def run_model_test_mp(meta_param_dict, adjustment):
+        assert meta_param_dict == {"hello_world": [{"value": "hello, there!"}]}
+        return run_model(meta_param_dict, adjustment)
+
+    class TestFunctions(TestFunctions1):
+        ok_meta_param_dict = {"hello_world": "hello, there!"}
+        run_model = run_model_test_mp
+
+    tf = TestFunctions()
+    tf.test_run_model()
