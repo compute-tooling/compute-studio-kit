@@ -14,7 +14,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/compute-studio-org/Compute-Studio-Toolkit",
     packages=setuptools.find_packages(),
-    install_requires=["paramtools", "cs-storage", "fsspec"],
+    install_requires=["paramtools", "cs-storage", "fsspec", "pyyaml"],
     include_package_data=True,
     entry_points={
         "console_scripts": [
